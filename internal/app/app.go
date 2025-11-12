@@ -4,6 +4,7 @@ import (
 	"app/internal/config"
 	errutils "app/pkg/errors"
 	"app/pkg/logger"
+	"app/pkg/postgres"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -22,14 +23,14 @@ func Run() {
 	// Migrations
 	Migrate(cfg.PG.URL)
 
-	// // DB connecting
-	// log.Info("Connecting to DB")
-	// pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.MaxPoolSize))
-	// if err != nil {
-	// 	log.Fatal(errutils.WrapPathErr(err))
-	// }
-	// defer pg.Close()
-	// log.Info("Connected to DB")
+	// DB connecting
+	log.Info("Connecting to DB...")
+	pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.MaxPoolSize))
+	if err != nil {
+		log.Fatal(errutils.WrapPathErr(err))
+	}
+	defer pg.Close()
+	log.Info("Connected to DB")
 
 	// // Repos
 	// repositories := repo.NewRepositories(pg)

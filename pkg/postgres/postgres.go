@@ -1,14 +1,12 @@
 package postgres
 
 import (
+	errutils "app/pkg/errors"
 	"context"
-	errutils "go_app/pkg/errors"
 	"time"
 
 	"github.com/Masterminds/squirrel"
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,19 +17,6 @@ const (
 	DefaultConnTimeout  = time.Second
 )
 
-type PgxPool interface {
-	Close()
-	Acquire(ctx context.Context) (*pgxpool.Conn, error)
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-	SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
-	Begin(ctx context.Context) (pgx.Tx, error)
-	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
-	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
-	Ping(ctx context.Context) error
-}
-
 type Postgres struct {
 	maxPoolSize  int
 	connAttempts int
@@ -39,7 +24,7 @@ type Postgres struct {
 
 	Builder   squirrel.StatementBuilderType
 	CtxGetter *trmpgx.CtxGetter
-	Pool      PgxPool
+	Pool      *pgxpool.Pool
 }
 
 func New(pgUrl string, opts ...Option) (*Postgres, error) {
