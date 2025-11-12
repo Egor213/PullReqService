@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS public.users (
     username   VARCHAR(100) NOT NULL,
     team_name  VARCHAR(100) NOT NULL REFERENCES teams(team_name) ON DELETE CASCADE,
     is_active  BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL
 );
 
 

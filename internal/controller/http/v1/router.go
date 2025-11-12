@@ -3,7 +3,9 @@ package httpapi
 import (
 	"app/internal/service"
 	errorsutils "app/pkg/errors"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -12,10 +14,23 @@ import (
 )
 
 func ConfigureRouter(handler *echo.Echo, services *service.Services) {
-	handler.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{Output: setLogsFile()}))
+	logFile := setLogsFile()
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	handler.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Output: multiWriter,
+	}))
+
 	handler.Use(middleware.Recover())
 
-	handler.GET("/health", func(c echo.Context) error { return c.NoContent(200) })
+	api := handler.Group("/api")
+	{
+		api.GET("/ping", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
+
+		teams := api.Group("/teams")
+		newTeamsRoutes(teams, services.Teams)
+
+	}
 
 }
 
