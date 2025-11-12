@@ -1,5 +1,6 @@
 package validator
 
+// TODO: убрать если что
 import (
 	"fmt"
 	"reflect"

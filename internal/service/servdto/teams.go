@@ -1,4 +1,8 @@
 package servdto
 
-type AddTeamInput struct {
+import e "app/internal/entity"
+
+type ReplaceMembersInput struct {
+	TeamName string
+	Members  []e.TeamMember
 }

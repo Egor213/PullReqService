@@ -14,6 +14,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
@@ -44,9 +46,13 @@ func Run() {
 	// Repos
 	repositories := repo.NewRepositories(pg)
 
+	// Transaction manager
+	trManager := manager.Must(trmpgx.NewDefaultFactory(pg.Pool))
+
 	// Services
 	deps := service.ServicesDependencies{
-		Repos: repositories,
+		Repos:     repositories,
+		TrManager: trManager,
 	}
 	services := service.NewServices(deps)
 
