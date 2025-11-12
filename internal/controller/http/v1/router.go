@@ -27,8 +27,8 @@ func ConfigureRouter(handler *echo.Echo, services *service.Services) {
 	{
 		api.GET("/ping", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
 
-		teams := api.Group("/teams")
-		newTeamsRoutes(teams, services.Teams)
+		team := api.Group("/team")
+		newTeamsRoutes(team, services.Teams)
 
 	}
 

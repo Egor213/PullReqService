@@ -2,16 +2,13 @@ package pgdb
 
 import (
 	"context"
-	"errors"
 
 	e "app/internal/entity"
 	"app/internal/repo/repoerrs"
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
 
-	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UsersRepo struct {
@@ -33,10 +30,6 @@ func (r *UsersRepo) Upsert(ctx context.Context, u e.User) error {
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
 	_, err := conn.Exec(ctx, sql, args...)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			return errutils.WrapPathErr(err)
-		}
 		return errutils.WrapPathErr(err)
 	}
 
@@ -59,6 +52,7 @@ func (r *UsersRepo) GetUsersByTeam(ctx context.Context, teamName string) ([]e.Us
 	defer rows.Close()
 
 	users, err := pgx.CollectRows(rows, pgx.RowToStructByName[e.User])
+
 	if err != nil {
 		return nil, errutils.WrapPathErr(err)
 	}

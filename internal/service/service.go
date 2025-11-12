@@ -12,6 +12,7 @@ import (
 type Teams interface {
 	CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Team, error)
 	ReplaceTeamMembers(ctx context.Context, in servdto.ReplaceMembersInput) error
+	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 }
 
 type PullReq interface {
