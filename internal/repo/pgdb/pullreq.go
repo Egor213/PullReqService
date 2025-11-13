@@ -42,21 +42,21 @@ func (r *PullReqRepo) CreatePR(ctx context.Context, in repodto.CreatePRInput) (e
 	)
 
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return e.PullRequest{}, repoerrs.ErrAlreadyExists
+			case pgerrcode.ForeignKeyViolation:
+				return e.PullRequest{}, repoerrs.ErrNotFound
+			}
+		}
+
 		if errors.Is(err, pgx.ErrNoRows) {
 			return e.PullRequest{}, repoerrs.ErrNotFound
 		}
+
 		return e.PullRequest{}, errutils.WrapPathErr(err)
-	}
-
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		switch pgErr.Code {
-		case pgerrcode.UniqueViolation:
-			return e.PullRequest{}, repoerrs.ErrAlreadyExists
-		case pgerrcode.ForeignKeyViolation:
-			return e.PullRequest{}, repoerrs.ErrNotFound
-
-		}
 	}
 
 	return pr, nil
@@ -106,9 +106,48 @@ func (r *PullReqRepo) GetPR(ctx context.Context, prID string) (e.PullRequest, er
 }
 
 func (r *PullReqRepo) AssignReviewers(ctx context.Context, prID string, reviewers []string) ([]string, error) {
-	return []string{}, nil
+	if len(reviewers) == 0 {
+		return nil, nil
+	}
+
+	builder := r.Builder.
+		Insert("pr_reviewers").
+		Columns("pr_id", "user_id")
+
+	for _, userID := range reviewers {
+		builder = builder.Values(prID, userID)
+	}
+
+	builder = builder.Suffix("ON CONFLICT (pr_id, user_id) DO NOTHING")
+
+	sql, args, _ := builder.ToSql()
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+
+	_, err := conn.Exec(ctx, sql, args...)
+	if err != nil {
+		return nil, errutils.WrapPathErr(err)
+	}
+
+	return reviewers, nil
 }
 
 func (r *PullReqRepo) SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error {
+	sql, args, _ := r.Builder.
+		Update("prs").
+		Set("need_more_reviewers", value).
+		Where("pr_id = ?", prID).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	cmdTag, err := conn.Exec(ctx, sql, args...)
+
+	if err != nil {
+		return errutils.WrapPathErr(err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return repoerrs.ErrNotFound
+	}
+
 	return nil
 }

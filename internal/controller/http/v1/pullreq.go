@@ -49,7 +49,7 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 
 	if err != nil {
 		if errors.Is(err, serverrs.ErrPRExists) {
-			ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodePRExists, err.Error())
+			ut.NewErrReasonJSON(c, http.StatusConflict, httperrs.ErrCodePRExists, err.Error())
 			return err
 		}
 		ut.NewErrReasonJSON(c, http.StatusInternalServerError, httperrs.ErrCodeInternalServer, httperrs.ErrInternalServer.Error())

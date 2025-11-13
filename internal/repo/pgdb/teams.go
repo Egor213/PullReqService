@@ -96,9 +96,13 @@ func (r *TeamsRepo) DeleteUsersFromTeam(ctx context.Context, teamName string) er
 		ToSql()
 
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
-	_, err := conn.Exec(ctx, sql, args...)
+	cmdTag, err := conn.Exec(ctx, sql, args...)
 	if err != nil {
 		return errutils.WrapPathErr(err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return repoerrs.ErrNotFound
 	}
 
 	return nil

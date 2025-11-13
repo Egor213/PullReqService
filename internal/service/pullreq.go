@@ -55,16 +55,18 @@ func (s *PullReqService) CreatePR(ctx context.Context, in servdto.CreatePRInput)
 			if errors.Is(err, repoerrs.ErrAlreadyExists) {
 				return serverrs.ErrPRExists
 			}
+			log.Error(errutils.WrapPathErr(err))
 			return serverrs.ErrCreatePR
 		}
 
-		// if err := s.AssignReviewers(ctx, servdto.AssignReviewersInput{
-		// 	PullReqID:  pr.PullReqID,
-		// 	AuthorID:   pr.AuthorID,
-		// 	AuthorTeam: user.TeamName,
-		// }); err != nil {
-		// 	return err
-		// }
+		err = s.AssignReviewers(ctx, servdto.AssignReviewersInput{
+			PullReqID:    pr.PullReqID,
+			AuthorTeam:   user.TeamName,
+			ExcludeUsers: []string{in.AuthorID},
+		})
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
@@ -77,21 +79,37 @@ func (s *PullReqService) CreatePR(ctx context.Context, in servdto.CreatePRInput)
 func (s *PullReqService) AssignReviewers(ctx context.Context, in servdto.AssignReviewersInput) error {
 	const reviewersCount = 2
 
-	users, err := s.usersRepo.GetActiveUsersTeam(ctx, in.AuthorTeam, in.ExcludeUsers)
-	if err != nil {
-		return serverrs.ErrCannotGetUser
-	}
-	rand.Shuffle(len(users), func(i, j int) {
-		users[i], users[j] = users[j], users[i]
+	return s.trManager.Do(ctx, func(ctx context.Context) error {
+		users, err := s.usersRepo.GetActiveUsersTeam(ctx, in.AuthorTeam, in.ExcludeUsers)
+		if err != nil {
+			return serverrs.ErrCannotGetUser
+		}
+
+		if len(users) == 0 {
+			if err := s.prRepo.SetNeedMoreReviewrs(ctx, in.PullReqID, true); err != nil {
+				return err
+			}
+			return nil
+		}
+
+		rand.Shuffle(len(users), func(i, j int) {
+			users[i], users[j] = users[j], users[i]
+		})
+
+		count := min(reviewersCount, len(users))
+		selectedReviewers := users[:count]
+
+		if _, err := s.prRepo.AssignReviewers(ctx, in.PullReqID, selectedReviewers); err != nil {
+			return err
+		}
+
+		needMore := count < reviewersCount
+		if err := s.prRepo.SetNeedMoreReviewrs(ctx, in.PullReqID, needMore); err != nil {
+			return err
+		}
+
+		return nil
 	})
-	reviewers := users[:min(reviewersCount, len(users))]
-	s.prRepo.AssignReviewers(ctx, in.PullReqID, reviewers)
-	if len(reviewers) < reviewersCount {
-		s.prRepo.SetNeedMoreReviewrs(ctx, in.PullReqID, true)
-	} else {
-		s.prRepo.SetNeedMoreReviewrs(ctx, in.PullReqID, false)
-	}
-	return nil
 }
 
 func (s *PullReqService) GetPR(ctx context.Context, prID string) (e.PullRequest, error) {

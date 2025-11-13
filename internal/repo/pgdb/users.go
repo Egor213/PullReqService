@@ -105,17 +105,17 @@ func (r *UsersRepo) GetUserByID(ctx context.Context, userID string) (e.User, err
 }
 
 func (r *UsersRepo) GetActiveUsersTeam(ctx context.Context, teamName string, exIDs []string) ([]string, error) {
-	sqlBuilder := r.Builder.
+	builder := r.Builder.
 		Select("user_id").
 		From("users").
 		Where("team_name = ?", teamName).
 		Where("is_active = true")
 
 	if len(exIDs) > 0 {
-		sqlBuilder = sqlBuilder.Where(sq.NotEq{"user_id": exIDs})
+		builder = builder.Where(sq.NotEq{"user_id": exIDs})
 	}
 
-	sql, args, _ := sqlBuilder.ToSql()
+	sql, args, _ := builder.ToSql()
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
 
 	rows, err := conn.Query(ctx, sql, args...)
