@@ -8,5 +8,5 @@ import (
 )
 
 func NewErrReasonJSON(c echo.Context, httpCode int, msgCode httperrs.ErrorCode, msg string) error {
-	return c.JSON(httpCode, httpdto.ErrorResponse{Error: httpdto.APIError{Code: msgCode, Message: msg}})
+	return c.JSON(httpCode, httpdto.ErrorOutput{Error: httpdto.APIError{Code: msgCode, Message: msg}})
 }

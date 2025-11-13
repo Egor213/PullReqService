@@ -12,6 +12,7 @@ import (
 )
 
 type Teams interface {
+	// TODO: Возможно не очень круто использовать сущности в инпутах, так что заменить!
 	CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Team, error)
 	ReplaceTeamMembers(ctx context.Context, in servdto.ReplaceMembersInput) error
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
@@ -21,7 +22,9 @@ type Users interface {
 	SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error)
 }
 
-type PullReq interface{}
+type PullReq interface {
+	CreatePR(ctx context.Context, in servdto.CreatePRInput) (e.PullRequest, error)
+}
 
 type Auth interface {
 	GenerateToken(ctx context.Context, in servdto.GenTokenInput) (string, error)
@@ -45,8 +48,9 @@ type ServicesDependencies struct {
 
 func NewServices(deps ServicesDependencies) *Services {
 	return &Services{
-		Teams: NewTeamsService(deps.Repos.Teams, deps.Repos.Users, deps.TrManager),
-		Auth:  NewAuthService(deps.Repos.Users, deps.SignKey, deps.TokenTTL),
-		Users: NewUsersService(deps.Repos.Users),
+		Teams:   NewTeamsService(deps.Repos.Teams, deps.Repos.Users, deps.TrManager),
+		Auth:    NewAuthService(deps.Repos.Users, deps.SignKey, deps.TokenTTL),
+		Users:   NewUsersService(deps.Repos.Users),
+		PullReq: NewPullReqService(deps.Repos.PullReq, deps.TrManager),
 	}
 }

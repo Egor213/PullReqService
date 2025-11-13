@@ -15,8 +15,8 @@ CREATE TYPE public."pr_status" AS ENUM ('OPEN', 'MERGED');
 
 
 CREATE TABLE IF NOT EXISTS public.prs (
-    pr_id               BIGSERIAL PRIMARY KEY,
-    title               TEXT NOT NULL,
+    pr_id               VARCHAR(100) PRIMARY KEY,
+    title               VARCHAR(100) NOT NULL,
     author_id           VARCHAR(100) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     status              public."pr_status" NOT NULL DEFAULT 'OPEN',
     need_more_reviewers BOOLEAN NOT NULL DEFAULT FALSE,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.prs (
 );
 
 CREATE TABLE IF NOT EXISTS public.pr_reviewers (
-    pr_id    BIGINT NOT NULL REFERENCES prs(pr_id) ON DELETE CASCADE,
+    pr_id    VARCHAR(100) NOT NULL REFERENCES prs(pr_id) ON DELETE CASCADE,
     user_id  VARCHAR(100) NOT NULL REFERENCES users(user_id),
     PRIMARY KEY (pr_id, user_id)
 );

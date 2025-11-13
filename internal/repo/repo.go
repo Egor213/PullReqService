@@ -5,6 +5,7 @@ import (
 
 	e "app/internal/entity"
 	"app/internal/repo/pgdb"
+	"app/internal/repo/repodto"
 	"app/pkg/postgres"
 )
 
@@ -21,7 +22,7 @@ type Users interface {
 }
 
 type PullReq interface {
-	Temp(ctx context.Context) error
+	CreatePR(ctx context.Context, in repodto.CreatePRInput) (e.PullRequest, error)
 }
 
 type Repositories struct {
