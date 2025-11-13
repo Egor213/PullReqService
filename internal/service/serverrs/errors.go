@@ -16,4 +16,5 @@ var (
 	ErrTokenExpired        = errors.New("token expired")
 	ErrPRExists            = errors.New("pull request already exists")
 	ErrCreatePR            = errors.New("cannot create pull request")
+	ErrInactiveCreator     = errors.New("creator is inactive")
 )

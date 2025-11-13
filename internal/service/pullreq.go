@@ -15,30 +15,49 @@ import (
 
 type PullReqService struct {
 	prRepo    repo.PullReq
+	usersRepo repo.Users
 	trManager *manager.Manager
 }
 
-func NewPullReqService(prRepo repo.PullReq, tr *manager.Manager) *PullReqService {
+func NewPullReqService(prRepo repo.PullReq, uRepo repo.Users, tr *manager.Manager) *PullReqService {
 	return &PullReqService{
 		prRepo:    prRepo,
+		usersRepo: uRepo,
 		trManager: tr,
 	}
 }
 
 func (s *PullReqService) CreatePR(ctx context.Context, in servdto.CreatePRInput) (e.PullRequest, error) {
-	pr, err := s.prRepo.CreatePR(ctx, repodto.CreatePRInput{
-		PullReqID: in.PullReqID,
-		NamePR:    in.NamePR,
-		AuthorID:  in.AuthorID,
-		Status:    e.StatusOpen,
+	var pr e.PullRequest
+	err := s.trManager.Do(ctx, func(ctx context.Context) error {
+		user, err := s.usersRepo.GetUserByID(ctx, in.AuthorID)
+		if err != nil {
+			if errors.Is(err, repoerrs.ErrNotFound) {
+				return serverrs.ErrUserNotFound
+			}
+			return serverrs.ErrCannotGetUser
+		}
+
+		if user.IsActive == nil || !*user.IsActive {
+			return serverrs.ErrInactiveCreator
+		}
+
+		pr, err = s.prRepo.CreatePR(ctx, repodto.CreatePRInput{
+			PullReqID: in.PullReqID,
+			NamePR:    in.NamePR,
+			AuthorID:  in.AuthorID,
+			Status:    e.StatusOpen,
+		})
+		if err != nil {
+			if errors.Is(err, repoerrs.ErrAlreadyExists) {
+				return serverrs.ErrPRExists
+			}
+			return serverrs.ErrCreatePR
+		}
+		return nil
 	})
 	if err != nil {
-		if errors.Is(err, repoerrs.ErrAlreadyExists) {
-			return e.PullRequest{}, serverrs.ErrPRExists
-		} else if errors.Is(err, repoerrs.ErrNotFound) {
-			return e.PullRequest{}, serverrs.ErrCannotGetUser
-		}
-		return e.PullRequest{}, serverrs.ErrCreatePR
+		return e.PullRequest{}, err
 	}
 	return pr, nil
 }

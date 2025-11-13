@@ -1,7 +1,6 @@
 package service
 
 import (
-	"app/internal/entity"
 	e "app/internal/entity"
 	"app/internal/repo"
 	"app/internal/repo/repoerrs"
@@ -38,7 +37,7 @@ func (s *AuthService) GenerateToken(ctx context.Context, in servdto.GenTokenInpu
 		return "", serverrs.ErrCannotGetUser
 	}
 	exTime := time.Now().Add(s.tokenTTL).Unix()
-	claims := &entity.TokenClaims{
+	claims := &e.TokenClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: exTime,
 			IssuedAt:  time.Now().Unix(),

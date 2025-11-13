@@ -51,6 +51,6 @@ func NewServices(deps ServicesDependencies) *Services {
 		Teams:   NewTeamsService(deps.Repos.Teams, deps.Repos.Users, deps.TrManager),
 		Auth:    NewAuthService(deps.Repos.Users, deps.SignKey, deps.TokenTTL),
 		Users:   NewUsersService(deps.Repos.Users),
-		PullReq: NewPullReqService(deps.Repos.PullReq, deps.TrManager),
+		PullReq: NewPullReqService(deps.Repos.PullReq, deps.Repos.Users, deps.TrManager),
 	}
 }
