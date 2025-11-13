@@ -1,10 +1,10 @@
 package app
 
 import (
-	errutils "app/pkg/errors"
 	"errors"
-
 	"time"
+
+	errutils "app/pkg/errors"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

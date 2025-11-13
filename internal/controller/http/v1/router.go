@@ -1,13 +1,14 @@
 package httpapi
 
 import (
-	"app/internal/service"
-	errorsutils "app/pkg/errors"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"app/internal/service"
+	errorsutils "app/pkg/errors"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -31,12 +32,11 @@ func ConfigureRouter(handler *echo.Echo, services *service.Services) {
 		newTeamsRoutes(team, services.Teams)
 
 	}
-
 }
 
 func setLogsFile() *os.File {
 	logPath := filepath.Join("logs", "logfile.log")
-	file, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	file, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		log.Fatal(errorsutils.WrapPathErr(err))
 	}

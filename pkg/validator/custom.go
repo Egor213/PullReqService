@@ -1,11 +1,12 @@
 package validator
 
 import (
-	errorsutils "app/pkg/errors"
 	"fmt"
 	"log"
 	"reflect"
 	"strings"
+
+	errorsutils "app/pkg/errors"
 
 	"github.com/go-playground/validator/v10"
 )

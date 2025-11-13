@@ -1,10 +1,11 @@
 package service
 
 import (
+	"context"
+
 	e "app/internal/entity"
 	"app/internal/repo"
 	"app/internal/service/servdto"
-	"context"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )
@@ -15,8 +16,7 @@ type Teams interface {
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 }
 
-type PullReq interface {
-}
+type PullReq interface{}
 
 type Services struct {
 	Teams

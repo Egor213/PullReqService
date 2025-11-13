@@ -52,7 +52,6 @@ func (r *UsersRepo) GetUsersByTeam(ctx context.Context, teamName string) ([]e.Us
 	defer rows.Close()
 
 	users, err := pgx.CollectRows(rows, pgx.RowToStructByName[e.User])
-
 	if err != nil {
 		return nil, errutils.WrapPathErr(err)
 	}

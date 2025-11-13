@@ -1,13 +1,14 @@
 package httpapi
 
 import (
+	"errors"
+	"net/http"
+
 	"app/internal/controller/http/v1/httpdto"
 	"app/internal/controller/http/v1/httperrs"
 	httpmappers "app/internal/controller/http/v1/mappers"
 	"app/internal/service"
 	"app/internal/service/serverrs"
-	"errors"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -36,7 +37,6 @@ func (r *TeamsRoutes) addTeam(c echo.Context) error {
 	}
 
 	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), httpmappers.ToEntityTeam(input))
-
 	if err != nil {
 		if errors.Is(err, serverrs.ErrTeamWithUsersExists) {
 			return newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeTeamExists, err.Error())

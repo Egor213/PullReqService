@@ -1,10 +1,11 @@
 package pgdb
 
 import (
-	errutils "app/pkg/errors"
-	"app/pkg/postgres"
 	"context"
 	"errors"
+
+	errutils "app/pkg/errors"
+	"app/pkg/postgres"
 
 	e "app/internal/entity"
 	repoerrs "app/internal/repo/repoerrs"

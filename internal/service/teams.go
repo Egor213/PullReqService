@@ -1,14 +1,15 @@
 package service
 
 import (
+	"context"
+	"errors"
+
 	e "app/internal/entity"
 	"app/internal/repo"
 	"app/internal/repo/repoerrs"
 	servmappers "app/internal/service/mappers"
 	"app/internal/service/servdto"
 	"app/internal/service/serverrs"
-	"context"
-	"errors"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )
@@ -59,7 +60,6 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Tea
 		}
 		return nil
 	})
-
 	if err != nil {
 		return e.Team{}, err
 	}

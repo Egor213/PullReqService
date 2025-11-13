@@ -1,9 +1,9 @@
 package entity
 
 type TeamMember struct {
+	IsActive *bool  `json:"is_active"`
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
-	IsActive *bool  `json:"is_active"`
 }
 
 type Team struct {

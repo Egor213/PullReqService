@@ -11,6 +11,7 @@ func Address(address string) Option {
 		hs.server.Addr = address
 	}
 }
+
 func ReadTimeout(timeout time.Duration) Option {
 	return func(s *HttpServer) {
 		s.server.ReadTimeout = timeout

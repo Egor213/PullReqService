@@ -1,8 +1,9 @@
 package pgdb
 
 import (
-	"app/pkg/postgres"
 	"context"
+
+	"app/pkg/postgres"
 )
 
 type PullReqRepo struct {

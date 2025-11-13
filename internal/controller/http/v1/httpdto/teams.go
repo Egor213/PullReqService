@@ -1,9 +1,9 @@
 package httpdto
 
 type TeamMemberInput struct {
+	IsActive *bool  `json:"is_active" validate:"required"`
 	UserID   string `json:"user_id" validate:"required"`
 	Username string `json:"username" validate:"required"`
-	IsActive *bool  `json:"is_active" validate:"required"`
 }
 
 type AddTeamInput struct {

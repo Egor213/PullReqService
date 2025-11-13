@@ -1,8 +1,9 @@
 package config
 
 import (
-	errutils "app/pkg/errors"
 	"os"
+
+	errutils "app/pkg/errors"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	log "github.com/sirupsen/logrus"
@@ -32,8 +33,8 @@ type (
 	}
 
 	PG struct {
-		MaxPoolSize int    `env-required:"true" env:"MAX_POOL_SIZE" yaml:"max_pool_size"`
 		URL         string `env-required:"true" env:"POSTGRES_CONN"`
+		MaxPoolSize int    `env-required:"true" env:"MAX_POOL_SIZE" yaml:"max_pool_size"`
 	}
 )
 

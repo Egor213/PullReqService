@@ -1,9 +1,10 @@
 package postgres
 
 import (
-	errutils "app/pkg/errors"
 	"context"
 	"time"
+
+	errutils "app/pkg/errors"
 
 	"github.com/Masterminds/squirrel"
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
@@ -18,13 +19,12 @@ const (
 )
 
 type Postgres struct {
+	Builder      squirrel.StatementBuilderType
+	CtxGetter    *trmpgx.CtxGetter
+	Pool         *pgxpool.Pool
 	maxPoolSize  int
 	connAttempts int
 	connTimeout  time.Duration
-
-	Builder   squirrel.StatementBuilderType
-	CtxGetter *trmpgx.CtxGetter
-	Pool      *pgxpool.Pool
 }
 
 func New(pgUrl string, opts ...Option) (*Postgres, error) {
@@ -41,7 +41,6 @@ func New(pgUrl string, opts ...Option) (*Postgres, error) {
 	}
 
 	poolConfig, err := pgxpool.ParseConfig(pgUrl)
-
 	if err != nil {
 		return nil, errutils.WrapPathErr(err)
 	}
@@ -50,7 +49,6 @@ func New(pgUrl string, opts ...Option) (*Postgres, error) {
 
 	for pg.connAttempts > 0 {
 		pg.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
-
 		if err != nil {
 			return nil, errutils.WrapPathErr(err)
 		}

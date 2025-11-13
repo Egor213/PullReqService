@@ -25,5 +25,4 @@ func SetupLogger(level string) {
 	} else {
 		log.SetLevel(loggerLevel)
 	}
-
 }

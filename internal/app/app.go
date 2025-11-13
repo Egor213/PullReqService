@@ -1,6 +1,10 @@
 package app
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"app/internal/config"
 	httpapi "app/internal/controller/http/v1"
 	"app/internal/repo"
@@ -10,9 +14,6 @@ import (
 	"app/pkg/logger"
 	"app/pkg/postgres"
 	"app/pkg/validator"
-	"os"
-	"os/signal"
-	"syscall"
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
@@ -86,5 +87,4 @@ func Run() {
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
 	}
-
 }
