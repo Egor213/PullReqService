@@ -8,6 +8,7 @@ import (
 	"app/internal/controller/http/v1/httperrs"
 	ut "app/internal/controller/http/v1/httputils"
 	mw "app/internal/controller/http/v1/midlleware"
+	e "app/internal/entity"
 	"app/internal/service"
 	"app/internal/service/serverrs"
 
@@ -18,12 +19,12 @@ type UsersRoutes struct {
 	usersService service.Users
 }
 
-func newUsersRoutes(g *echo.Group, usersServ service.Users, authMW *mw.Auth) {
+func newUsersRoutes(g *echo.Group, usersServ service.Users, m *mw.Auth) {
 	r := &UsersRoutes{
 		usersService: usersServ,
 	}
 
-	g.POST("/setIsActive", r.setIsActive)
+	g.POST("/setIsActive", r.setIsActive, m.UserIdentity, m.CheckRole(e.RoleAdmin))
 }
 
 func (r *UsersRoutes) setIsActive(c echo.Context) error {

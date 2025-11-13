@@ -57,7 +57,8 @@ func (m *Auth) CheckRole(required e.Role) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			role, ok := c.Get(roleKey).(e.Role)
 			if !ok || role != required {
-				return echo.NewHTTPError(http.StatusForbidden, httperrs.ErrNoRights.Error())
+				ut.NewErrReasonJSON(c, http.StatusForbidden, httperrs.ErrCodeForbidden, httperrs.ErrNoRights.Error())
+				return nil
 			}
 
 			return next(c)

@@ -30,20 +30,20 @@ func NewAuthService(userRepo repo.Users, signKey string, tokenTTL time.Duration)
 }
 
 func (s *AuthService) GenerateToken(ctx context.Context, in servdto.GenTokenInput) (string, error) {
-	user, err := s.userRepo.GetUserByID(ctx, in.UserID)
+	_, err := s.userRepo.GetUserByID(ctx, in.UserID)
 	if err != nil {
 		if errors.Is(err, repoerrs.ErrNotFound) {
 			return "", serverrs.ErrUserNotFound
 		}
 		return "", serverrs.ErrCannotGetUser
 	}
-
+	exTime := time.Now().Add(s.tokenTTL).Unix()
 	claims := &entity.TokenClaims{
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(s.tokenTTL).Unix(),
+			ExpiresAt: exTime,
 			IssuedAt:  time.Now().Unix(),
 		},
-		UserID: user.UserID,
+		UserID: in.UserID,
 		Role:   in.Role,
 	}
 
@@ -64,17 +64,19 @@ func (s *AuthService) ParseToken(accessToken string) (e.ParsedToken, error) {
 		return []byte(s.signKey), nil
 	})
 
-	print("AAAAAAAAA")
 	if err != nil {
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				return e.ParsedToken{}, serverrs.ErrTokenExpired
+			}
+		}
 		return e.ParsedToken{}, serverrs.ErrCannotParseToken
 	}
-	print("BBBBBBB")
 
 	claims, ok := token.Claims.(*e.TokenClaims)
 	if !ok || !token.Valid {
 		return e.ParsedToken{}, serverrs.ErrCannotParseToken
 	}
-	print("CCCCCCCC")
 
 	return e.ParsedToken{
 		UserID: claims.UserID,

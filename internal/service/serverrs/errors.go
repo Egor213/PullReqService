@@ -12,4 +12,5 @@ var (
 	ErrCannotGetUser       = errors.New("cannot get user")
 	ErrCannotSetParam      = errors.New("cannot set param")
 	ErrCannotSignToken     = errors.New("cannot sign token")
+	ErrTokenExpired        = errors.New("token expired")
 )
