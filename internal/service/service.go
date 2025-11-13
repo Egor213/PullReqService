@@ -24,6 +24,8 @@ type Users interface {
 
 type PullReq interface {
 	CreatePR(ctx context.Context, in servdto.CreatePRInput) (e.PullRequest, error)
+	AssignReviewers(ctx context.Context, in servdto.AssignReviewersInput) error
+	GetPR(ctx context.Context, prID string) (e.PullRequest, error)
 }
 
 type Auth interface {

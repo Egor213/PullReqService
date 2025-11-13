@@ -23,11 +23,12 @@ func newPullReqRoutes(g *echo.Group, prService service.PullReq, m *mw.Auth) {
 		prService: prService,
 	}
 
-	g.POST("/create", r.CreatePR)
+	g.GET("/get", r.getPR)
+	g.POST("/create", r.createPR)
 }
 
 // TODO: если неактивный пользователь захочет создать PR?
-func (r *PullReqRoutes) CreatePR(c echo.Context) error {
+func (r *PullReqRoutes) createPR(c echo.Context) error {
 	var input httpdto.CreatePRInput
 
 	if err := c.Bind(&input); err != nil {
@@ -57,6 +58,42 @@ func (r *PullReqRoutes) CreatePR(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, httpdto.CreatePROutput{
 		PullReq: httpdto.PullRequestDTO{
+			PullReqID: pr.PullReqID,
+			NamePR:    pr.NamePR,
+			AuthorID:  pr.AuthorID,
+			Status:    string(pr.Status),
+			Reviewers: pr.Reviewers,
+		},
+	})
+}
+
+func (r *PullReqRoutes) getPR(c echo.Context) error {
+	var input httpdto.GetPRInput
+
+	if err := c.Bind(&input); err != nil {
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, httperrs.ErrInvalidParams.Error())
+		return err
+	}
+
+	if err := c.Validate(input); err != nil {
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, err.Error())
+		return err
+	}
+
+	pr, err := r.prService.GetPR(c.Request().Context(), input.PRID)
+	if err != nil {
+		if errors.Is(err, serverrs.ErrNotFoundPR) {
+			ut.NewErrReasonJSON(c, http.StatusNotFound, httperrs.ErrCodeNotFound, httperrs.ErrNotFound.Error())
+			return err
+		}
+		ut.NewErrReasonJSON(c, http.StatusInternalServerError, httperrs.ErrCodeInternalServer, httperrs.ErrInternalServer.Error())
+		return err
+
+	}
+
+	return c.JSON(http.StatusOK, httpdto.GetPROutput{
+		NeedMoreReviewers: &pr.NeedMoreReviewers,
+		PullRequestDTO: httpdto.PullRequestDTO{
 			PullReqID: pr.PullReqID,
 			NamePR:    pr.NamePR,
 			AuthorID:  pr.AuthorID,

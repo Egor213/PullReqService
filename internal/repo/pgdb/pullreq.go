@@ -4,11 +4,13 @@ import (
 	e "app/internal/entity"
 	"app/internal/repo/repodto"
 	repoerrs "app/internal/repo/repoerrs"
+	errutils "app/pkg/errors"
 	"app/pkg/postgres"
 	"context"
 	"errors"
 
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -39,6 +41,13 @@ func (r *PullReqRepo) CreatePR(ctx context.Context, in repodto.CreatePRInput) (e
 		&pr.MergedAt,
 	)
 
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return e.PullRequest{}, repoerrs.ErrNotFound
+		}
+		return e.PullRequest{}, errutils.WrapPathErr(err)
+	}
+
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		switch pgErr.Code {
@@ -51,4 +60,55 @@ func (r *PullReqRepo) CreatePR(ctx context.Context, in repodto.CreatePRInput) (e
 	}
 
 	return pr, nil
+}
+
+func (r *PullReqRepo) GetPR(ctx context.Context, prID string) (e.PullRequest, error) {
+	sql, args, _ := r.Builder.
+		Select(
+			"prs.pr_id", "prs.title", "prs.author_id", "prs.status", "prs.need_more_reviewers", "prs.created_at", "prs.merged_at",
+			"array_agg(pr_reviewers.user_id) AS assigned_reviewers",
+		).
+		From("prs").
+		LeftJoin("pr_reviewers ON pr_reviewers.pr_id = prs.pr_id").
+		Where("prs.pr_id = ?", prID).
+		GroupBy("prs.pr_id, prs.title, prs.author_id, prs.status, prs.created_at, prs.merged_at").
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+
+	var pr e.PullRequest
+	var assignedReviewers []*string
+	err := conn.QueryRow(ctx, sql, args...).Scan(
+		&pr.PullReqID,
+		&pr.NamePR,
+		&pr.AuthorID,
+		&pr.Status,
+		&pr.NeedMoreReviewers,
+		&pr.CreatedAt,
+		&pr.MergedAt,
+		&assignedReviewers,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return e.PullRequest{}, repoerrs.ErrNotFound
+		}
+		return e.PullRequest{}, errutils.WrapPathErr(err)
+	}
+
+	pr.Reviewers = make([]string, 0, len(assignedReviewers))
+	for _, s := range assignedReviewers {
+		if s != nil {
+			pr.Reviewers = append(pr.Reviewers, *s)
+		}
+	}
+	return pr, nil
+}
+
+func (r *PullReqRepo) AssignReviewers(ctx context.Context, prID string, reviewers []string) ([]string, error) {
+	return []string{}, nil
+}
+
+func (r *PullReqRepo) SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error {
+	return nil
 }

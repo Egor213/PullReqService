@@ -17,3 +17,12 @@ type PullRequestDTO struct {
 	Status    string   `json:"status"`
 	Reviewers []string `json:"assigned_reviewers"`
 }
+
+type GetPRInput struct {
+	PRID string `query:"pr_id" validate:"required"`
+}
+
+type GetPROutput struct {
+	PullRequestDTO
+	NeedMoreReviewers *bool `json:"need_more_reviewers"`
+}

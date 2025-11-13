@@ -8,6 +8,7 @@ import (
 var (
 	ErrTeamWithUsersExists = errors.New("team with such users already exists")
 	ErrNotFoundTeam        = errors.New("team not found")
+	ErrNotFoundPR          = errors.New("pull request not found")
 	ErrUserNotFound        = errors.New("user not found")
 	ErrCannotParseToken    = errors.New("cannot parse token")
 	ErrCannotGetUser       = errors.New("cannot get user")
@@ -17,4 +18,5 @@ var (
 	ErrPRExists            = errors.New("pull request already exists")
 	ErrCreatePR            = errors.New("cannot create pull request")
 	ErrInactiveCreator     = errors.New("creator is inactive")
+	ErrCannotGetPR         = errors.New("cannot get pull request")
 )

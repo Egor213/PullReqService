@@ -21,6 +21,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// TODO: Может попробовать централирозовать логику mappers entity чтобы они были около entity
+
 func Run() {
 	// Config
 	cfg, err := config.New()

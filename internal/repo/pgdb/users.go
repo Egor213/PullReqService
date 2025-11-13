@@ -9,6 +9,8 @@ import (
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
 
+	sq "github.com/Masterminds/squirrel"
+
 	"github.com/jackc/pgx/v5"
 )
 
@@ -100,4 +102,36 @@ func (r *UsersRepo) GetUserByID(ctx context.Context, userID string) (e.User, err
 	}
 
 	return user, nil
+}
+
+func (r *UsersRepo) GetActiveUsersTeam(ctx context.Context, teamName string, exIDs []string) ([]string, error) {
+	sqlBuilder := r.Builder.
+		Select("user_id").
+		From("users").
+		Where("team_name = ?", teamName).
+		Where("is_active = true")
+
+	if len(exIDs) > 0 {
+		sqlBuilder = sqlBuilder.Where(sq.NotEq{"user_id": exIDs})
+	}
+
+	sql, args, _ := sqlBuilder.ToSql()
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+
+	rows, err := conn.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, errutils.WrapPathErr(err)
+	}
+	defer rows.Close()
+
+	var userIDs []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, errutils.WrapPathErr(err)
+		}
+		userIDs = append(userIDs, id)
+	}
+
+	return userIDs, nil
 }

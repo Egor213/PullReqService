@@ -20,10 +20,14 @@ type Users interface {
 	DeleteUsersByTeam(ctx context.Context, teamName string) error
 	SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error)
 	GetUserByID(ctx context.Context, userID string) (e.User, error)
+	GetActiveUsersTeam(ctx context.Context, teamName string, exIDs []string) ([]string, error)
 }
 
 type PullReq interface {
+	GetPR(ctx context.Context, prID string) (e.PullRequest, error)
 	CreatePR(ctx context.Context, in repodto.CreatePRInput) (e.PullRequest, error)
+	AssignReviewers(ctx context.Context, prID string, reviewers []string) ([]string, error)
+	SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error
 }
 
 type Repositories struct {

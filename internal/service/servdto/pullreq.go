@@ -5,3 +5,9 @@ type CreatePRInput struct {
 	NamePR    string
 	AuthorID  string
 }
+
+type AssignReviewersInput struct {
+	PullReqID    string
+	ExcludeUsers []string
+	AuthorTeam   string
+}

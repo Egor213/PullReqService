@@ -36,7 +36,9 @@ func (r *TeamsRepo) CreateTeam(ctx context.Context, teamName string) (e.Team, er
 	var team e.Team
 	if err := conn.QueryRow(ctx, sql, args...).Scan(&team.TeamName); err != nil {
 		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return e.Team{}, repoerrs.ErrNotFound
+		} else if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 			return e.Team{}, repoerrs.ErrAlreadyExists
 		}
 		return e.Team{}, errutils.WrapPathErr(err)
