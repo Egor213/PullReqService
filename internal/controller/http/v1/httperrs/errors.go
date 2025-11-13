@@ -1,6 +1,8 @@
 package httperrs
 
-import "errors"
+import (
+	"errors"
+)
 
 type ErrorCode string
 
@@ -13,10 +15,16 @@ const (
 	ErrCodeNotFound       ErrorCode = "NOT_FOUND"
 	ErrCodeInvalidParams  ErrorCode = "INVALID_REQUEST_PARAMETERS"
 	ErrCodeInternalServer ErrorCode = "INTERVAL_SERVER_ERROR"
+	ErrCodeInvalidHeader  ErrorCode = "INVALID_HEADER"
+	ErrCodeInvalidToken   ErrorCode = "INVALID_TOKEN"
+	ErrCodeForbidden      ErrorCode = "FORBIDDEN"
 )
 
 var (
-	ErrInvalidParams  = errors.New("invalid request parameters")
-	ErrNotFound       = errors.New("resource not found")
-	ErrInternalServer = errors.New("internal server error")
+	ErrInvalidParams     = errors.New("invalid request parameters")
+	ErrNotFound          = errors.New("resource not found")
+	ErrInternalServer    = errors.New("internal server error")
+	ErrInvalidAuthHeader = errors.New("invalid auth header")
+	ErrCannotParseToken  = errors.New("cannot parse token")
+	ErrNoRights          = errors.New("no rights")
 )

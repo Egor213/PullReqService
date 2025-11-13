@@ -78,3 +78,26 @@ func (r *UsersRepo) SetIsActive(ctx context.Context, userID string, isActive *bo
 
 	return user, nil
 }
+
+func (r *UsersRepo) GetUserByID(ctx context.Context, userID string) (e.User, error) {
+	sql, args, _ := r.Builder.
+		Select("user_id", "username", "team_name", "is_active").
+		From("users").
+		Where("user_id = ?", userID).
+		Limit(1).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	row := conn.QueryRow(ctx, sql, args...)
+
+	var user e.User
+	err := row.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return e.User{}, repoerrs.ErrNotFound
+		}
+		return e.User{}, errutils.WrapPathErr(err)
+	}
+
+	return user, nil
+}

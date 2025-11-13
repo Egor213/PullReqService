@@ -26,7 +26,7 @@ func (s *UsersService) SetIsActive(ctx context.Context, userID string, isActive 
 		if errors.Is(err, repoerrs.ErrNotFound) {
 			return e.User{}, serverrs.ErrUserNotFound
 		}
-		return e.User{}, err
+		return e.User{}, serverrs.ErrCannotSetParam
 	}
 
 	return user, nil

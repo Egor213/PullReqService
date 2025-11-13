@@ -7,3 +7,6 @@ log:
 
 postgres:
   max_pool_size: 12
+
+jwt:
+  token_ttl: 120m

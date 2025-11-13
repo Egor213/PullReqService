@@ -1,4 +1,4 @@
-package httpapi
+package httputils
 
 import (
 	"app/internal/controller/http/v1/httpdto"
@@ -7,6 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func newErrReasonJSON(c echo.Context, httpCode int, msgCode httperrs.ErrorCode, msg string) error {
+func NewErrReasonJSON(c echo.Context, httpCode int, msgCode httperrs.ErrorCode, msg string) error {
 	return c.JSON(httpCode, httpdto.ErrorResponse{Error: httpdto.APIError{Code: msgCode, Message: msg}})
 }

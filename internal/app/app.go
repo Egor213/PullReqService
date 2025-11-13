@@ -54,6 +54,8 @@ func Run() {
 	deps := service.ServicesDependencies{
 		Repos:     repositories,
 		TrManager: trManager,
+		SignKey:   cfg.JWT.SignKey,
+		TokenTTL:  cfg.JWT.TokenTTL,
 	}
 	services := service.NewServices(deps)
 

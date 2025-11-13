@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	mw "app/internal/controller/http/v1/midlleware"
 	"app/internal/service"
 	errorsutils "app/pkg/errors"
 
@@ -22,13 +23,17 @@ func ConfigureRouter(handler *echo.Echo, services *service.Services) {
 		Output: multiWriter,
 	}))
 
+	authMW := mw.NewAuth(services.Auth)
+
 	handler.Use(middleware.Recover())
 	handler.GET("/ping", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
 
+	newAuthRoutes(handler.Group("/auth"), services.Auth)
+
 	api := handler.Group("/api/v1")
 	{
-		newTeamsRoutes(api.Group("/team"), services.Teams)
-		newUsersRoutes(api.Group("/users"), services.Users)
+		newTeamsRoutes(api.Group("/team"), services.Teams, authMW)
+		newUsersRoutes(api.Group("/users"), services.Users, authMW)
 	}
 }
 
