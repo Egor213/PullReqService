@@ -16,10 +16,15 @@ type Teams interface {
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 }
 
+type Users interface {
+	SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error)
+}
+
 type PullReq interface{}
 
 type Services struct {
 	Teams
+	Users
 	PullReq
 }
 
@@ -31,5 +36,6 @@ type ServicesDependencies struct {
 func NewServices(deps ServicesDependencies) *Services {
 	return &Services{
 		Teams: NewTeamsService(deps.Repos.Teams, deps.Repos.Users, deps.TrManager),
+		Users: NewUsersService(deps.Repos.Users),
 	}
 }

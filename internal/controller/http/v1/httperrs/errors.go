@@ -17,6 +17,6 @@ const (
 
 var (
 	ErrInvalidParams  = errors.New("invalid request parameters")
-	ErrNotFound       = errors.New("not found")
+	ErrNotFound       = errors.New("resource not found")
 	ErrInternalServer = errors.New("internal server error")
 )

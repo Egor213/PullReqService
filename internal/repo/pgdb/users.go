@@ -2,11 +2,14 @@ package pgdb
 
 import (
 	"context"
+	"errors"
 
 	e "app/internal/entity"
 	"app/internal/repo/repoerrs"
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type UsersRepo struct {
@@ -51,4 +54,27 @@ func (r *UsersRepo) DeleteUsersByTeam(ctx context.Context, teamName string) erro
 	}
 
 	return nil
+}
+
+func (r *UsersRepo) SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error) {
+	sql, args, _ := r.Builder.
+		Update("users").
+		Set("is_active", isActive).
+		Where("user_id = ?", userID).
+		Suffix("RETURNING user_id, username, team_name, is_active").
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	row := conn.QueryRow(ctx, sql, args...)
+
+	var user e.User
+	err := row.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return e.User{}, repoerrs.ErrNotFound
+		}
+		return e.User{}, errutils.WrapPathErr(err)
+	}
+
+	return user, nil
 }
