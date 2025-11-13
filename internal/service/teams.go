@@ -73,7 +73,7 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Tea
 
 func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in servdto.ReplaceMembersInput) error {
 	return s.trManager.Do(ctx, func(ctx context.Context) error {
-		err := s.usersRepo.DeleteUsersByTeam(ctx, in.TeamName)
+		err := s.teamsRepo.DeleteUsersFromTeam(ctx, in.TeamName)
 
 		if err != nil && !errors.Is(err, repoerrs.ErrNoRowsDeleted) {
 			return err

@@ -26,6 +26,7 @@ func newPullReqRoutes(g *echo.Group, prService service.PullReq, m *mw.Auth) {
 	g.POST("/create", r.CreatePR)
 }
 
+// TODO: если неактивный пользователь захочет создать PR?
 func (r *PullReqRoutes) CreatePR(c echo.Context) error {
 	var input httpdto.CreatePRInput
 

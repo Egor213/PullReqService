@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.teams (
 CREATE TABLE IF NOT EXISTS public.users (
     user_id    VARCHAR(100) PRIMARY KEY,
     username   VARCHAR(100) NOT NULL,
-    team_name  VARCHAR(100) NOT NULL REFERENCES teams(team_name) ON DELETE CASCADE,
+    team_name  VARCHAR(100) REFERENCES teams(team_name) ON DELETE CASCADE,
     is_active  BOOLEAN NOT NULL DEFAULT TRUE
 );
 

@@ -85,3 +85,19 @@ func (r *TeamsRepo) GetTeam(ctx context.Context, teamName string) (e.Team, error
 
 	return team, nil
 }
+
+func (r *TeamsRepo) DeleteUsersFromTeam(ctx context.Context, teamName string) error {
+	sql, args, _ := r.Builder.
+		Update("users").
+		Set("team_name", nil).
+		Where("team_name = ?", teamName).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	_, err := conn.Exec(ctx, sql, args...)
+	if err != nil {
+		return errutils.WrapPathErr(err)
+	}
+
+	return nil
+}

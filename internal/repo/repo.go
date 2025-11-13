@@ -12,6 +12,7 @@ import (
 type Teams interface {
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 	CreateTeam(ctx context.Context, teamName string) (e.Team, error)
+	DeleteUsersFromTeam(ctx context.Context, teamName string) error
 }
 
 type Users interface {
