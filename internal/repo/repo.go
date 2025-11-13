@@ -9,12 +9,12 @@ import (
 )
 
 type Teams interface {
+	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 	CreateTeam(ctx context.Context, teamName string) (e.Team, error)
 }
 
 type Users interface {
 	Upsert(ctx context.Context, user e.User) error
-	GetUsersByTeam(ctx context.Context, teamName string) ([]e.User, error)
 	DeleteUsersByTeam(ctx context.Context, teamName string) error
 }
 

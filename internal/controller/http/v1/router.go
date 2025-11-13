@@ -23,13 +23,11 @@ func ConfigureRouter(handler *echo.Echo, services *service.Services) {
 	}))
 
 	handler.Use(middleware.Recover())
+	handler.GET("/ping", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
 
-	api := handler.Group("/api")
+	api := handler.Group("/api/v1")
 	{
-		api.GET("/ping", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
-
-		team := api.Group("/team")
-		newTeamsRoutes(team, services.Teams)
+		newTeamsRoutes(api.Group("/team"), services.Teams)
 
 	}
 }

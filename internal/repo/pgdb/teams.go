@@ -8,9 +8,11 @@ import (
 	"app/pkg/postgres"
 
 	e "app/internal/entity"
+	entitymappers "app/internal/entity/mappers"
 	repoerrs "app/internal/repo/repoerrs"
 
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -39,6 +41,47 @@ func (r *TeamsRepo) CreateTeam(ctx context.Context, teamName string) (e.Team, er
 		}
 		return e.Team{}, errutils.WrapPathErr(err)
 	}
+
+	return team, nil
+}
+
+func (r *TeamsRepo) GetTeam(ctx context.Context, teamName string) (e.Team, error) {
+	sql, args, _ := r.Builder.
+		Select("team_name").
+		From("teams").
+		Where("team_name = ?", teamName).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	row := conn.QueryRow(ctx, sql, args...)
+
+	var team e.Team
+	if err := row.Scan(&team.TeamName); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return e.Team{}, repoerrs.ErrNotFound
+		}
+		return e.Team{}, errutils.WrapPathErr(err)
+	}
+
+	sql, args, _ = r.Builder.
+		Select("user_id", "username", "team_name", "is_active").
+		From("users").
+		Where("team_name = ?", teamName).
+		OrderBy("user_id").
+		ToSql()
+
+	rows, err := conn.Query(ctx, sql, args...)
+	if err != nil {
+		return e.Team{}, errutils.WrapPathErr(err)
+	}
+	defer rows.Close()
+
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByName[e.User])
+	if err != nil {
+		return e.Team{}, errutils.WrapPathErr(err)
+	}
+
+	team.Members = entitymappers.UsersToTeamMembers(users)
 
 	return team, nil
 }

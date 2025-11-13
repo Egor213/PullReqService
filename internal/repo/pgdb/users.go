@@ -7,8 +7,6 @@ import (
 	"app/internal/repo/repoerrs"
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type UsersRepo struct {
@@ -34,33 +32,6 @@ func (r *UsersRepo) Upsert(ctx context.Context, u e.User) error {
 	}
 
 	return nil
-}
-
-func (r *UsersRepo) GetUsersByTeam(ctx context.Context, teamName string) ([]e.User, error) {
-	sql, args, _ := r.Builder.
-		Select("user_id", "username", "team_name", "is_active").
-		From("users").
-		Where("team_name = ?", teamName).
-		OrderBy("user_id").
-		ToSql()
-
-	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
-	rows, err := conn.Query(ctx, sql, args...)
-	if err != nil {
-		return nil, errutils.WrapPathErr(err)
-	}
-	defer rows.Close()
-
-	users, err := pgx.CollectRows(rows, pgx.RowToStructByName[e.User])
-	if err != nil {
-		return nil, errutils.WrapPathErr(err)
-	}
-
-	if len(users) == 0 {
-		return nil, repoerrs.ErrNotFound
-	}
-
-	return users, nil
 }
 
 func (r *UsersRepo) DeleteUsersByTeam(ctx context.Context, teamName string) error {

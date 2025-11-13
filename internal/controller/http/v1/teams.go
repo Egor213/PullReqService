@@ -23,25 +23,29 @@ func newTeamsRoutes(g *echo.Group, teamsServ service.Teams) {
 	}
 
 	g.POST("/add", r.addTeam)
-	g.GET("/get/", r.getTeam)
+	g.GET("/get", r.getTeam)
 }
 
 func (r *TeamsRoutes) addTeam(c echo.Context) error {
 	var input httpdto.AddTeamInput
 	if err := c.Bind(&input); err != nil {
-		return newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, httperrs.ErrInvalidParams.Error())
+		newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, httperrs.ErrInvalidParams.Error())
+		return err
 	}
 
 	if err := c.Validate(input); err != nil {
-		return newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, err.Error())
+		newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, err.Error())
+		return err
 	}
 
 	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), httpmappers.ToEntityTeam(input))
 	if err != nil {
 		if errors.Is(err, serverrs.ErrTeamWithUsersExists) {
-			return newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeTeamExists, err.Error())
+			newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeTeamExists, err.Error())
+			return err
 		}
-		return newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeTeamExists, httperrs.ErrInternalServer.Error())
+		newErrReasonJSON(c, http.StatusInternalServerError, httperrs.ErrCodeInternalServer, httperrs.ErrInternalServer.Error())
+		return err
 	}
 
 	output := httpmappers.ToAddTeamOutput(team)
@@ -52,39 +56,25 @@ func (r *TeamsRoutes) getTeam(c echo.Context) error {
 	var input httpdto.GetTeamInput
 
 	if err := c.Bind(&input); err != nil {
-		return newErrReasonJSON(
-			c,
-			http.StatusBadRequest,
-			httperrs.ErrCodeInvalidParams,
-			httperrs.ErrInvalidParams.Error(),
-		)
+		newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, httperrs.ErrInvalidParams.Error())
+		return err
 	}
 
 	if err := c.Validate(input); err != nil {
-		return newErrReasonJSON(
-			c,
-			http.StatusBadRequest,
-			httperrs.ErrCodeInvalidParams,
-			err.Error(),
-		)
+		newErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, err.Error())
+		return err
 	}
 
 	team, err := r.teamsService.GetTeam(c.Request().Context(), input.TeamName)
 	if err != nil {
 		if errors.Is(err, serverrs.ErrNotFoundTeam) {
-			return newErrReasonJSON(
-				c,
-				http.StatusNotFound,
-				httperrs.ErrCodeNotFound,
-				httperrs.ErrNotFound.Error(),
-			)
+			newErrReasonJSON(c, http.StatusNotFound, httperrs.ErrCodeNotFound, httperrs.ErrNotFound.Error())
+			return err
+
 		}
-		return newErrReasonJSON(
-			c,
-			http.StatusBadRequest,
-			httperrs.ErrCodeInternalServer,
-			httperrs.ErrInternalServer.Error(),
-		)
+		newErrReasonJSON(c, http.StatusInternalServerError, httperrs.ErrCodeInternalServer, httperrs.ErrInternalServer.Error())
+		return err
+
 	}
 
 	return c.JSON(http.StatusOK, team)
