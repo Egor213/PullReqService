@@ -1,4 +1,4 @@
-package mapper
+package httpmappers
 
 import (
 	hd "app/internal/controller/http/v1/dto"

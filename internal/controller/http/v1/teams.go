@@ -6,7 +6,7 @@ import (
 
 	hd "app/internal/controller/http/v1/dto"
 	he "app/internal/controller/http/v1/errors"
-	httpmappers "app/internal/controller/http/v1/mappers"
+	hmap "app/internal/controller/http/v1/mappers"
 	mw "app/internal/controller/http/v1/midlleware"
 	ut "app/internal/controller/http/v1/utils"
 	e "app/internal/entity"
@@ -39,7 +39,7 @@ func (r *TeamsRoutes) addTeam(c echo.Context) error {
 		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
-	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), httpmappers.ToCrOrUpTeamInput(input))
+	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), hmap.ToCrOrUpTeamInput(input))
 	if err != nil {
 		if errors.Is(err, se.ErrTeamWithUsersExists) {
 			return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeTeamExists, err.Error())
@@ -47,7 +47,7 @@ func (r *TeamsRoutes) addTeam(c echo.Context) error {
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
-	output := httpmappers.ToAddTeamOutput(team)
+	output := hmap.ToAddTeamOutput(team)
 	return c.JSON(http.StatusCreated, output)
 }
 
@@ -69,6 +69,6 @@ func (r *TeamsRoutes) getTeam(c echo.Context) error {
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
-	output := httpmappers.ToGetTeamOutput(team)
+	output := hmap.ToGetTeamOutput(team)
 	return c.JSON(http.StatusOK, output)
 }

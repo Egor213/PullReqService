@@ -35,11 +35,16 @@ type Auth interface {
 	ParseToken(accessToken string) (e.ParsedToken, error)
 }
 
+type Stats interface {
+	GetStats(ctx context.Context) (sd.GetStatsOutput, error)
+}
+
 type Services struct {
 	Teams
 	Users
 	PullReq
 	Auth
+	Stats
 }
 
 type ServicesDependencies struct {
@@ -56,5 +61,6 @@ func NewServices(deps ServicesDependencies) *Services {
 		Auth:    NewAuthService(deps.Repos.Users, deps.SignKey, deps.TokenTTL),
 		Users:   NewUsersService(deps.Repos.Users),
 		PullReq: NewPullReqService(deps.Repos.PullReq, deps.Repos.Users, deps.TrManager),
+		Stats:   NewStatsService(deps.Repos.Stats),
 	}
 }

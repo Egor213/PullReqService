@@ -34,10 +34,16 @@ type PullReq interface {
 	MergePR(ctx context.Context, prID string) (*time.Time, error)
 }
 
+type Stats interface {
+	GetReviewerStats(ctx context.Context) ([]rd.ReviewerStatsOutput, error)
+	GetPRStats(ctx context.Context) ([]rd.PRStatsOutput, error)
+}
+
 type Repositories struct {
 	Users
 	Teams
 	PullReq
+	Stats
 }
 
 func NewRepositories(pg *postgres.Postgres) *Repositories {
@@ -45,5 +51,6 @@ func NewRepositories(pg *postgres.Postgres) *Repositories {
 		Users:   pgdb.NewUsersRepo(pg),
 		Teams:   pgdb.NewTeamsRepo(pg),
 		PullReq: pgdb.NewPullReqRepo(pg),
+		Stats:   pgdb.NewStatsRepo(pg),
 	}
 }
