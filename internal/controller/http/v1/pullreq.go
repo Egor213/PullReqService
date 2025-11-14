@@ -24,6 +24,7 @@ func newPullReqRoutes(g *echo.Group, prService service.PullReq, m *mw.Auth) {
 	}
 
 	g.GET("/get", r.getPR)
+	g.POST("/merge", r.mergePR)
 	g.POST("/create", r.createPR)
 	g.POST("/reassign", r.reassignReviewer)
 }
@@ -94,6 +95,7 @@ func (r *PullReqRoutes) getPR(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, hd.GetPROutput{
 		NeedMoreReviewers: &pr.NeedMoreReviewers,
+		MergedAt:          pr.MergedAt,
 		PullRequestDTO: hd.PullRequestDTO{
 			PullReqID: pr.PullReqID,
 			NamePR:    pr.NamePR,
@@ -123,7 +125,6 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 	})
 
 	if err != nil {
-
 		if errors.Is(err, se.ErrReviewerNotAssigned) || errors.Is(err, se.ErrNoAvailableReviewers) {
 			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 			return err
@@ -144,5 +145,41 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 			Reviewers: out.PullReq.Reviewers,
 		},
 		NewReviewer: out.NewRevID,
+	})
+}
+
+func (r *PullReqRoutes) mergePR(c echo.Context) error {
+	var input hd.MergePRInput
+
+	if err := c.Bind(&input); err != nil {
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
+		return err
+	}
+
+	if err := c.Validate(input); err != nil {
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
+		return err
+	}
+
+	pr, err := r.prService.MergePR(c.Request().Context(), input.PullReqID)
+	if err != nil {
+		if errors.Is(err, se.ErrNotFoundPR) {
+			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
+			return err
+		}
+		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
+		return err
+	}
+	return c.JSON(http.StatusOK, hd.MergePROutput{
+		PullReq: hd.MergePRODTO{
+			PullRequestDTO: hd.PullRequestDTO{
+				PullReqID: pr.PullReqID,
+				NamePR:    pr.NamePR,
+				AuthorID:  pr.AuthorID,
+				Status:    string(pr.Status),
+				Reviewers: pr.Reviewers,
+			},
+			MergedAt: pr.MergedAt,
+		},
 	})
 }

@@ -3,7 +3,7 @@ package pgdb
 import (
 	e "app/internal/entity"
 	rd "app/internal/repo/repodto"
-	repoerrs "app/internal/repo/repoerrs"
+	re "app/internal/repo/repoerrs"
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
 	"context"
@@ -46,14 +46,14 @@ func (r *PullReqRepo) CreatePR(ctx context.Context, in rd.CreatePRInput) (e.Pull
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return e.PullRequest{}, repoerrs.ErrAlreadyExists
+				return e.PullRequest{}, re.ErrAlreadyExists
 			case pgerrcode.ForeignKeyViolation:
-				return e.PullRequest{}, repoerrs.ErrNotFound
+				return e.PullRequest{}, re.ErrNotFound
 			}
 		}
 
 		if errors.Is(err, pgx.ErrNoRows) {
-			return e.PullRequest{}, repoerrs.ErrNotFound
+			return e.PullRequest{}, re.ErrNotFound
 		}
 
 		return e.PullRequest{}, errutils.WrapPathErr(err)
@@ -91,7 +91,7 @@ func (r *PullReqRepo) GetPR(ctx context.Context, prID string) (e.PullRequest, er
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return e.PullRequest{}, repoerrs.ErrNotFound
+			return e.PullRequest{}, re.ErrNotFound
 		}
 		return e.PullRequest{}, errutils.WrapPathErr(err)
 	}
@@ -146,7 +146,7 @@ func (r *PullReqRepo) SetNeedMoreReviewrs(ctx context.Context, prID string, valu
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		return repoerrs.ErrNotFound
+		return re.ErrNotFound
 	}
 
 	return nil
@@ -167,7 +167,7 @@ func (r *PullReqRepo) ChangeReviewer(ctx context.Context, in rd.ChangeReviewerIn
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		return repoerrs.ErrNotFound
+		return re.ErrNotFound
 	}
 	return nil
 }
@@ -193,4 +193,26 @@ func (r *PullReqRepo) GetPRsByReviewer(ctx context.Context, uID string) ([]e.Pul
 	}
 
 	return prs, nil
+}
+
+func (r *PullReqRepo) MergePR(ctx context.Context, prID string) error {
+	sql, args, _ := r.Builder.
+		Update("prs").
+		Set("status", e.StatusMerged).
+		Set("merged_at", "NOW()").
+		Where("pr_id = ? AND status = ?", prID, e.StatusOpen).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+
+	cmdTag, err := conn.Exec(ctx, sql, args...)
+
+	if err != nil {
+		return errutils.WrapPathErr(err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return re.ErrNotFound
+	}
+	return nil
 }

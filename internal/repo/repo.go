@@ -30,6 +30,7 @@ type PullReq interface {
 	SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error
 	ChangeReviewer(ctx context.Context, in rd.ChangeReviewerInput) error
 	GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error)
+	MergePR(ctx context.Context, prID string) error
 }
 
 type Repositories struct {

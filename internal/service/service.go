@@ -27,6 +27,7 @@ type PullReq interface {
 	GetPR(ctx context.Context, prID string) (e.PullRequest, error)
 	ReassignReviewer(ctx context.Context, in sd.ReassignReviewerInput) (sd.ReassignReviewerOutput, error)
 	GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error)
+	MergePR(ctx context.Context, prID string) (e.PullRequest, error)
 }
 
 type Auth interface {

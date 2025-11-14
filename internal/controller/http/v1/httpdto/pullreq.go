@@ -1,5 +1,7 @@
 package httpdto
 
+import "time"
+
 type CreatePRInput struct {
 	PullReqID string `json:"pull_request_id" validate:"required"`
 	NamePR    string `json:"pull_request_name" validate:"required"`
@@ -24,12 +26,13 @@ type GetPRInput struct {
 
 type GetPROutput struct {
 	PullRequestDTO
-	NeedMoreReviewers *bool `json:"need_more_reviewers"`
+	NeedMoreReviewers *bool      `json:"need_more_reviewers"`
+	MergedAt          *time.Time `json:"mergedAt"`
 }
 
 type ReassignReviewerInput struct {
-	PullReqID   string `json:"pull_request_id"`
-	OldReviewer string `json:"old_reviewer_id"`
+	PullReqID   string `json:"pull_request_id" validate:"required"`
+	OldReviewer string `json:"old_reviewer_id" validate:"required"`
 }
 
 type ReassignReviewerOutput struct {
@@ -51,4 +54,17 @@ type GetReviewInput struct {
 type GetReviewOutput struct {
 	UserID  string                `json:"user_id"`
 	PullReq []PullRequestShortDTO `json:"pull_requests"`
+}
+
+type MergePRInput struct {
+	PullReqID string `json:"pull_request_id" validate:"required"`
+}
+
+type MergePRODTO struct {
+	PullRequestDTO
+	MergedAt *time.Time `json:"mergedAt"`
+}
+
+type MergePROutput struct {
+	PullReq MergePRODTO `json:"pr"`
 }

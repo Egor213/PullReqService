@@ -114,8 +114,7 @@ func (r *UsersRepo) GetActiveUsersTeam(ctx context.Context, teamName string, exI
 	builder := r.Builder.
 		Select("user_id").
 		From("users").
-		Where("team_name = ?", teamName).
-		Where("is_active = true")
+		Where("team_name = ? AND is_active = true", teamName)
 
 	if len(exIDs) > 0 {
 		builder = builder.Where(sq.NotEq{"user_id": exIDs})
