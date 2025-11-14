@@ -6,10 +6,10 @@ import (
 
 	e "app/internal/entity"
 	"app/internal/repo"
-	"app/internal/repo/repoerrs"
+	re "app/internal/repo/repoerrs"
 	servmappers "app/internal/service/mappers"
-	"app/internal/service/servdto"
-	"app/internal/service/serverrs"
+	sd "app/internal/service/servdto"
+	se "app/internal/service/serverrs"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )
@@ -28,13 +28,13 @@ func NewTeamsService(tRepo repo.Teams, uRepo repo.Users, tr *manager.Manager) *T
 	}
 }
 
-func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in servdto.CrOrUpTeamInput) (e.Team, error) {
+func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamInput) (e.Team, error) {
 	members := servmappers.TeamMemberDTOToMember(in.Members)
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		team, err := s.teamsRepo.GetTeam(ctx, in.TeamName)
 
 		if err != nil {
-			if !errors.Is(err, repoerrs.ErrNotFound) {
+			if !errors.Is(err, re.ErrNotFound) {
 				return err
 			}
 
@@ -52,11 +52,11 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in servdto.CrOrUp
 		}
 
 		if CompareMembers(team.Members, members) {
-			return serverrs.ErrTeamWithUsersExists
+			return se.ErrTeamWithUsersExists
 		}
 
-		err = s.ReplaceTeamMembers(ctx, servdto.ReplaceMembersInput(in))
-		if err != nil && !errors.Is(err, repoerrs.ErrNoRowsDeleted) {
+		err = s.ReplaceTeamMembers(ctx, sd.ReplaceMembersInput(in))
+		if err != nil && !errors.Is(err, re.ErrNoRowsDeleted) {
 			return err
 		}
 
@@ -73,11 +73,11 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in servdto.CrOrUp
 	}, nil
 }
 
-func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in servdto.ReplaceMembersInput) error {
+func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in sd.ReplaceMembersInput) error {
 	return s.trManager.Do(ctx, func(ctx context.Context) error {
 		err := s.teamsRepo.DeleteUsersFromTeam(ctx, in.TeamName)
 
-		if err != nil && !errors.Is(err, repoerrs.ErrNoRowsDeleted) {
+		if err != nil && !errors.Is(err, re.ErrNoRowsDeleted) {
 			return err
 		}
 
@@ -93,8 +93,8 @@ func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in servdto.Replac
 func (s *TeamsService) GetTeam(ctx context.Context, teamName string) (e.Team, error) {
 	team, err := s.teamsRepo.GetTeam(ctx, teamName)
 	if err != nil {
-		if errors.Is(err, repoerrs.ErrNotFound) {
-			return e.Team{}, serverrs.ErrNotFoundTeam
+		if errors.Is(err, re.ErrNotFound) {
+			return e.Team{}, se.ErrNotFoundTeam
 		}
 		return e.Team{}, err
 	}

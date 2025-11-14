@@ -93,7 +93,6 @@ func (r *UsersRepo) GetUserByID(ctx context.Context, userID string) (e.User, err
 		Select("user_id", "username", "team_name", "is_active").
 		From("users").
 		Where("user_id = ?", userID).
-		Limit(1).
 		ToSql()
 
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)

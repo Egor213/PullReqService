@@ -6,8 +6,8 @@ import (
 
 	e "app/internal/entity"
 	"app/internal/repo"
-	"app/internal/repo/repoerrs"
-	"app/internal/service/servdto"
+	re "app/internal/repo/repoerrs"
+	sd "app/internal/service/servdto"
 	"app/internal/service/serverrs"
 )
 
@@ -21,10 +21,10 @@ func NewUsersService(uRepo repo.Users) *UsersService {
 	}
 }
 
-func (s *UsersService) SetIsActive(ctx context.Context, in servdto.SetIsActiveInput) (e.User, error) {
+func (s *UsersService) SetIsActive(ctx context.Context, in sd.SetIsActiveInput) (e.User, error) {
 	user, err := s.usersRepo.SetIsActive(ctx, in.UserID, in.IsActive)
 	if err != nil {
-		if errors.Is(err, repoerrs.ErrNotFound) {
+		if errors.Is(err, re.ErrNotFound) {
 			return e.User{}, serverrs.ErrUserNotFound
 		}
 		return e.User{}, serverrs.ErrCannotSetParam

@@ -27,4 +27,5 @@ var (
 	ErrInvalidAuthHeader = errors.New("invalid auth header")
 	ErrCannotParseToken  = errors.New("cannot parse token")
 	ErrNoRights          = errors.New("no rights")
+	ErrPRMerged          = errors.New("cannot reassign on merged PR")
 )

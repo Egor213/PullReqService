@@ -13,16 +13,3 @@ func UsersToTeamMembers(users []e.User) []e.TeamMember {
 	}
 	return members
 }
-
-func TeamMembersToUsers(members []e.TeamMember, teamName string) []e.User {
-	users := make([]e.User, 0, len(members))
-	for _, m := range members {
-		users = append(users, e.User{
-			UserID:   m.UserID,
-			Username: m.Username,
-			TeamName: teamName,
-			IsActive: m.IsActive,
-		})
-	}
-	return users
-}

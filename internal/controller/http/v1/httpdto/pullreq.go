@@ -26,3 +26,13 @@ type GetPROutput struct {
 	PullRequestDTO
 	NeedMoreReviewers *bool `json:"need_more_reviewers"`
 }
+
+type ReassignReviewerInput struct {
+	PullReqID   string `json:"pull_request_id"`
+	OldReviewer string `json:"old_reviewer_id"`
+}
+
+type ReassignReviewerOutput struct {
+	PullReq     PullRequestDTO `json:"pr"`
+	NewReviewer string         `json:"replaced_by"`
+}

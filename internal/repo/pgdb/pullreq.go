@@ -2,7 +2,7 @@ package pgdb
 
 import (
 	e "app/internal/entity"
-	"app/internal/repo/repodto"
+	rd "app/internal/repo/repodto"
 	repoerrs "app/internal/repo/repoerrs"
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
@@ -22,7 +22,7 @@ func NewPullReqRepo(pg *postgres.Postgres) *PullReqRepo {
 	return &PullReqRepo{pg}
 }
 
-func (r *PullReqRepo) CreatePR(ctx context.Context, in repodto.CreatePRInput) (e.PullRequest, error) {
+func (r *PullReqRepo) CreatePR(ctx context.Context, in rd.CreatePRInput) (e.PullRequest, error) {
 	sql, args, _ := r.Builder.
 		Insert("prs").
 		Columns("pr_id", "title", "author_id", "status").
@@ -152,7 +152,7 @@ func (r *PullReqRepo) SetNeedMoreReviewrs(ctx context.Context, prID string, valu
 	return nil
 }
 
-func (r *PullReqRepo) ChangeReviewer(ctx context.Context, in repodto.ChangeReviewerInput) error {
+func (r *PullReqRepo) ChangeReviewer(ctx context.Context, in rd.ChangeReviewerInput) error {
 	sql, args, _ := r.Builder.
 		Update("pr_reviewers").
 		Set("user_id", in.NewReviewer).

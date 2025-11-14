@@ -6,29 +6,30 @@ import (
 
 	e "app/internal/entity"
 	"app/internal/repo"
-	"app/internal/service/servdto"
+	sd "app/internal/service/servdto"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )
 
 type Teams interface {
-	CreateOrUpdateTeam(ctx context.Context, in servdto.CrOrUpTeamInput) (e.Team, error)
-	ReplaceTeamMembers(ctx context.Context, in servdto.ReplaceMembersInput) error
+	CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamInput) (e.Team, error)
+	ReplaceTeamMembers(ctx context.Context, in sd.ReplaceMembersInput) error
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 }
 
 type Users interface {
-	SetIsActive(ctx context.Context, in servdto.SetIsActiveInput) (e.User, error)
+	SetIsActive(ctx context.Context, in sd.SetIsActiveInput) (e.User, error)
 }
 
 type PullReq interface {
-	CreatePR(ctx context.Context, in servdto.CreatePRInput) (e.PullRequest, error)
-	AssignReviewers(ctx context.Context, in servdto.AssignReviewersInput) error
+	CreatePR(ctx context.Context, in sd.CreatePRInput) (e.PullRequest, error)
+	AssignReviewers(ctx context.Context, in sd.AssignReviewersInput) ([]string, error)
 	GetPR(ctx context.Context, prID string) (e.PullRequest, error)
+	ReassignReviewer(ctx context.Context, in sd.ReassignReviewerInput) (sd.ReassignReviewerOutput, error)
 }
 
 type Auth interface {
-	GenerateToken(ctx context.Context, in servdto.GenTokenInput) (string, error)
+	GenerateToken(ctx context.Context, in sd.GenTokenInput) (string, error)
 	ParseToken(accessToken string) (e.ParsedToken, error)
 }
 

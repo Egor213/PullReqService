@@ -1,13 +1,13 @@
 package httpapi
 
 import (
-	"app/internal/controller/http/v1/httpdto"
-	"app/internal/controller/http/v1/httperrs"
+	hd "app/internal/controller/http/v1/httpdto"
+	he "app/internal/controller/http/v1/httperrs"
 	ut "app/internal/controller/http/v1/httputils"
 	mw "app/internal/controller/http/v1/midlleware"
 	"app/internal/service"
-	"app/internal/service/servdto"
-	"app/internal/service/serverrs"
+	sd "app/internal/service/servdto"
+	se "app/internal/service/serverrs"
 	"errors"
 	"net/http"
 
@@ -25,39 +25,40 @@ func newPullReqRoutes(g *echo.Group, prService service.PullReq, m *mw.Auth) {
 
 	g.GET("/get", r.getPR)
 	g.POST("/create", r.createPR)
+	g.POST("/reassign", r.reassignReviewer)
 }
 
 // TODO: если неактивный пользователь захочет создать PR?
 func (r *PullReqRoutes) createPR(c echo.Context) error {
-	var input httpdto.CreatePRInput
+	var input hd.CreatePRInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, httperrs.ErrInvalidParams.Error())
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 		return err
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, err.Error())
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 		return err
 	}
 
-	pr, err := r.prService.CreatePR(c.Request().Context(), servdto.CreatePRInput{
+	pr, err := r.prService.CreatePR(c.Request().Context(), sd.CreatePRInput{
 		PullReqID: input.PullReqID,
 		NamePR:    input.NamePR,
 		AuthorID:  input.AuthorID,
 	})
 
 	if err != nil {
-		if errors.Is(err, serverrs.ErrPRExists) {
-			ut.NewErrReasonJSON(c, http.StatusConflict, httperrs.ErrCodePRExists, err.Error())
+		if errors.Is(err, se.ErrPRExists) {
+			ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, err.Error())
 			return err
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, httperrs.ErrCodeInternalServer, httperrs.ErrInternalServer.Error())
+		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, httpdto.CreatePROutput{
-		PullReq: httpdto.PullRequestDTO{
+	return c.JSON(http.StatusCreated, hd.CreatePROutput{
+		PullReq: hd.PullRequestDTO{
 			PullReqID: pr.PullReqID,
 			NamePR:    pr.NamePR,
 			AuthorID:  pr.AuthorID,
@@ -68,37 +69,80 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 }
 
 func (r *PullReqRoutes) getPR(c echo.Context) error {
-	var input httpdto.GetPRInput
+	var input hd.GetPRInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, httperrs.ErrInvalidParams.Error())
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 		return err
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeInvalidParams, err.Error())
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 		return err
 	}
 
 	pr, err := r.prService.GetPR(c.Request().Context(), input.PRID)
 	if err != nil {
-		if errors.Is(err, serverrs.ErrNotFoundPR) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, httperrs.ErrCodeNotFound, httperrs.ErrNotFound.Error())
+		if errors.Is(err, se.ErrNotFoundPR) {
+			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 			return err
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, httperrs.ErrCodeInternalServer, httperrs.ErrInternalServer.Error())
+		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 		return err
 
 	}
 
-	return c.JSON(http.StatusOK, httpdto.GetPROutput{
+	return c.JSON(http.StatusOK, hd.GetPROutput{
 		NeedMoreReviewers: &pr.NeedMoreReviewers,
-		PullRequestDTO: httpdto.PullRequestDTO{
+		PullRequestDTO: hd.PullRequestDTO{
 			PullReqID: pr.PullReqID,
 			NamePR:    pr.NamePR,
 			AuthorID:  pr.AuthorID,
 			Status:    string(pr.Status),
 			Reviewers: pr.Reviewers,
 		},
+	})
+}
+
+func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
+	var input hd.ReassignReviewerInput
+
+	if err := c.Bind(&input); err != nil {
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
+		return err
+	}
+
+	if err := c.Validate(input); err != nil {
+		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
+		return err
+	}
+
+	out, err := r.prService.ReassignReviewer(c.Request().Context(), sd.ReassignReviewerInput{
+		PullReqID: input.PullReqID,
+		RevID:     input.OldReviewer,
+	})
+
+	if err != nil {
+
+		if errors.Is(err, se.ErrReviewerNotAssigned) || errors.Is(err, se.ErrNoAvailableReviewers) {
+			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
+			return err
+		} else if errors.Is(err, se.ErrMergedPR) {
+			ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRMerged, he.ErrPRMerged.Error())
+			return err
+		}
+		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
+		return err
+	}
+
+	return c.JSON(http.StatusOK, hd.ReassignReviewerOutput{
+		PullReq: hd.PullRequestDTO{
+			PullReqID: out.PullReq.PullReqID,
+			NamePR:    out.PullReq.NamePR,
+			AuthorID:  out.PullReq.AuthorID,
+			Status:    string(out.PullReq.Status),
+			Reviewers: out.PullReq.Reviewers,
+		},
+		NewReviewer: out.NewRevID,
 	})
 }

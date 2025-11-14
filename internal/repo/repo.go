@@ -5,7 +5,7 @@ import (
 
 	e "app/internal/entity"
 	"app/internal/repo/pgdb"
-	"app/internal/repo/repodto"
+	rd "app/internal/repo/repodto"
 	"app/pkg/postgres"
 )
 
@@ -25,9 +25,10 @@ type Users interface {
 
 type PullReq interface {
 	GetPR(ctx context.Context, prID string) (e.PullRequest, error)
-	CreatePR(ctx context.Context, in repodto.CreatePRInput) (e.PullRequest, error)
+	CreatePR(ctx context.Context, in rd.CreatePRInput) (e.PullRequest, error)
 	AssignReviewers(ctx context.Context, prID string, reviewers []string) ([]string, error)
 	SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error
+	ChangeReviewer(ctx context.Context, in rd.ChangeReviewerInput) error
 }
 
 type Repositories struct {

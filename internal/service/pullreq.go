@@ -3,16 +3,20 @@ package service
 import (
 	e "app/internal/entity"
 	"app/internal/repo"
-	"app/internal/repo/repodto"
-	"app/internal/repo/repoerrs"
-	"app/internal/service/servdto"
-	"app/internal/service/serverrs"
+	rd "app/internal/repo/repodto"
+	re "app/internal/repo/repoerrs"
+	sd "app/internal/service/servdto"
+	se "app/internal/service/serverrs"
 	errutils "app/pkg/errors"
 	"context"
 	"errors"
 	"math/rand/v2"
+	"slices"
 
+	"github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/settings"
+	"github.com/jackc/pgx/v5"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,36 +34,36 @@ func NewPullReqService(prRepo repo.PullReq, uRepo repo.Users, tr *manager.Manage
 	}
 }
 
-func (s *PullReqService) CreatePR(ctx context.Context, in servdto.CreatePRInput) (e.PullRequest, error) {
+func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.PullRequest, error) {
 	var pr e.PullRequest
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		user, err := s.usersRepo.GetUserByID(ctx, in.AuthorID)
 		if err != nil {
-			if errors.Is(err, repoerrs.ErrNotFound) {
-				return serverrs.ErrUserNotFound
+			if errors.Is(err, re.ErrNotFound) {
+				return se.ErrUserNotFound
 			}
-			return serverrs.ErrCannotGetUser
+			return se.ErrCannotGetUser
 		}
 
 		if user.IsActive == nil || !*user.IsActive {
-			return serverrs.ErrInactiveCreator
+			return se.ErrInactiveCreator
 		}
 
-		pr, err = s.prRepo.CreatePR(ctx, repodto.CreatePRInput{
+		pr, err = s.prRepo.CreatePR(ctx, rd.CreatePRInput{
 			PullReqID: in.PullReqID,
 			NamePR:    in.NamePR,
 			AuthorID:  in.AuthorID,
 			Status:    e.StatusOpen,
 		})
 		if err != nil {
-			if errors.Is(err, repoerrs.ErrAlreadyExists) {
-				return serverrs.ErrPRExists
+			if errors.Is(err, re.ErrAlreadyExists) {
+				return se.ErrPRExists
 			}
 			log.Error(errutils.WrapPathErr(err))
-			return serverrs.ErrCreatePR
+			return se.ErrCreatePR
 		}
 
-		err = s.AssignReviewers(ctx, servdto.AssignReviewersInput{
+		pr.Reviewers, err = s.AssignReviewers(ctx, sd.AssignReviewersInput{
 			PullReqID:    pr.PullReqID,
 			AuthorTeam:   user.TeamName,
 			ExcludeUsers: []string{in.AuthorID},
@@ -76,13 +80,13 @@ func (s *PullReqService) CreatePR(ctx context.Context, in servdto.CreatePRInput)
 	return pr, nil
 }
 
-func (s *PullReqService) AssignReviewers(ctx context.Context, in servdto.AssignReviewersInput) error {
+func (s *PullReqService) AssignReviewers(ctx context.Context, in sd.AssignReviewersInput) ([]string, error) {
 	const reviewersCount = 2
-
-	return s.trManager.Do(ctx, func(ctx context.Context) error {
+	var out []string
+	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		users, err := s.usersRepo.GetActiveUsersTeam(ctx, in.AuthorTeam, in.ExcludeUsers)
 		if err != nil {
-			return serverrs.ErrCannotGetUser
+			return se.ErrCannotGetUser
 		}
 
 		if len(users) == 0 {
@@ -98,8 +102,8 @@ func (s *PullReqService) AssignReviewers(ctx context.Context, in servdto.AssignR
 
 		count := min(reviewersCount, len(users))
 		selectedReviewers := users[:count]
-
-		if _, err := s.prRepo.AssignReviewers(ctx, in.PullReqID, selectedReviewers); err != nil {
+		out, err = s.prRepo.AssignReviewers(ctx, in.PullReqID, selectedReviewers)
+		if err != nil {
 			return err
 		}
 
@@ -110,25 +114,98 @@ func (s *PullReqService) AssignReviewers(ctx context.Context, in servdto.AssignR
 
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (s *PullReqService) GetPR(ctx context.Context, prID string) (e.PullRequest, error) {
 	pr, err := s.prRepo.GetPR(ctx, prID)
 	if err != nil {
-		if errors.Is(err, repoerrs.ErrNotFound) {
-			return e.PullRequest{}, serverrs.ErrNotFoundPR
+		if errors.Is(err, re.ErrNotFound) {
+			return e.PullRequest{}, se.ErrNotFoundPR
 		}
 		// TODO: везде такое поставить где неизвестная ошибка
 		log.Error(errutils.WrapPathErr(err))
-		return e.PullRequest{}, serverrs.ErrCannotGetPR
+		return e.PullRequest{}, se.ErrCannotGetPR
 	}
 	return pr, nil
 }
 
-// Получаем ревьеров у ПР (getReviewers)
-// Смотрим есть ли заданный пользователей среди ревьеров
-// Получаем Активных пользователей среди членов команды исключая автора и чела которого надо поменять и второго тоже, Чтобы не получилось так что 1 пользователь 2 раза ревьюит (GetActiveUsersTeam)
-// Случайным образом берем случайного пользователя
-// Обновляем пользователя в таблице ревьеров (AssignReviewers или отдельный метод который без ON CONFLICT ??)
+func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignReviewerInput) (sd.ReassignReviewerOutput, error) {
+	trOp := pgxv5.MustSettings(
+		settings.Must(),
+		pgxv5.WithTxOptions(pgx.TxOptions{IsoLevel: pgx.RepeatableRead}),
+	)
+	var out sd.ReassignReviewerOutput
+	err := s.trManager.DoWithSettings(ctx, trOp, func(ctx context.Context) error {
+		pr, err := s.prRepo.GetPR(ctx, in.PullReqID)
 
-// Под repeateble read
+		if err != nil {
+			if errors.Is(err, re.ErrNotFound) {
+				return se.ErrNotFoundPR
+			}
+			log.Error(errutils.WrapPathErr(err))
+			return se.ErrCannotGetPR
+		}
+
+		if len(pr.Reviewers) == 0 {
+			return se.ErrNotFoundReviewers
+		}
+		log.Info(pr.Reviewers)
+		if !slices.Contains(pr.Reviewers, in.RevID) {
+			return se.ErrReviewerNotAssigned
+		}
+
+		if pr.Status == e.StatusMerged {
+			return se.ErrMergedPR
+		}
+
+		exIDs := []string{pr.AuthorID}
+		exIDs = append(exIDs, pr.Reviewers...)
+
+		user, err := s.usersRepo.GetUserByID(ctx, pr.AuthorID)
+		if err != nil {
+			if errors.Is(err, re.ErrNotFound) {
+				return se.ErrUserNotFound
+			}
+			return se.ErrCannotGetUser
+		}
+
+		users, err := s.usersRepo.GetActiveUsersTeam(ctx, user.TeamName, exIDs)
+		if err != nil {
+			return se.ErrCannotGetUser
+		}
+
+		if len(users) == 0 {
+			return se.ErrNoAvailableReviewers
+		}
+
+		NewRevID := users[rand.IntN(len(users))]
+		err = s.prRepo.ChangeReviewer(ctx, rd.ChangeReviewerInput{
+			PullReqID:   in.PullReqID,
+			NewReviewer: NewRevID,
+			OldReviewer: in.RevID,
+		})
+
+		if err != nil {
+			if errors.Is(err, re.ErrNotFound) {
+				return se.ErrNotFoundReviewers
+			}
+			log.Error(errutils.WrapPathErr(err))
+			return err
+		}
+
+		out.NewRevID = NewRevID
+		id := slices.Index(pr.Reviewers, in.RevID)
+		pr.Reviewers[id] = NewRevID
+		out.PullReq = pr
+
+		return nil
+	})
+	if err != nil {
+		return sd.ReassignReviewerOutput{}, err
+	}
+	return out, nil
+}
