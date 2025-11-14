@@ -15,8 +15,6 @@ const (
 	ErrCodeNotFound        ErrorCode = "NOT_FOUND"
 	ErrCodeInvalidParams   ErrorCode = "INVALID_REQUEST_PARAMETERS"
 	ErrCodeInternalServer  ErrorCode = "INTERVAL_SERVER_ERROR"
-	ErrCodeInvalidHeader   ErrorCode = "INVALID_HEADER"
-	ErrCodeInvalidToken    ErrorCode = "INVALID_TOKEN"
 	ErrCodeForbidden       ErrorCode = "FORBIDDEN"
 	ErrCodeInactiveCreator ErrorCode = "INACTIVE_CREATOR"
 )
@@ -26,9 +24,9 @@ var (
 	ErrNotFound          = errors.New("resource not found")
 	ErrAlreadyExists     = errors.New("resource already exists")
 	ErrInternalServer    = errors.New("internal server error")
-	ErrInvalidAuthHeader = errors.New("invalid auth header")
-	ErrCannotParseToken  = errors.New("cannot parse token")
 	ErrNoRights          = errors.New("no rights")
 	ErrPRMerged          = errors.New("cannot reassign on merged PR")
 	ErrPRAlreadyExists   = errors.New("PR id already exists")
+	ErrReviewerNotAssign = errors.New("reviewer is not assigned to this PR")
+	ErrNoActiveCandidate = errors.New("no active replacement candidate in team")
 )

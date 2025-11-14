@@ -4,7 +4,6 @@ import (
 	"errors"
 )
 
-// TODO: добавь нормальные ошибки в методах сервисов, а то че там просто err надо через эти ошибки
 var (
 	ErrNotFoundTeam      = errors.New("team not found")
 	ErrNotFoundUser      = errors.New("user not found")

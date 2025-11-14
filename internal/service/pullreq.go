@@ -47,6 +47,10 @@ func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.P
 			return se.ErrInactiveCreator
 		}
 
+		if len(user.TeamName) == 0 {
+			return se.ErrNotFoundTeam
+		}
+
 		pr, err = s.prRepo.CreatePR(ctx, rd.CreatePRInput{
 			PullReqID: in.PullReqID,
 			NamePR:    in.NamePR,
@@ -187,7 +191,7 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
-			return se.HandleRepoNotFound(err, se.ErrNotFoundReviewers, se.ErrCannotChangeReviewer)
+			return se.ErrCannotChangeReviewer
 		}
 
 		out.NewRevID = NewRevID

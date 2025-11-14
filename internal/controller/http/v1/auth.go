@@ -42,7 +42,7 @@ func (r *authRoutes) login(c echo.Context) error {
 	})
 	if err != nil {
 		if errors.Is(err, se.ErrNotFoundUser) {
-			return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeNotFound, he.ErrNotFound.Error())
+			return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeNotFound, err.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}

@@ -6,6 +6,7 @@ import (
 	e "app/internal/entity"
 	"app/internal/service"
 	errutils "app/pkg/errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -37,13 +38,13 @@ func (h *Auth) UserIdentity(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		token, ok := bearerToken(c.Request())
 		if !ok {
-			log.Error(errutils.WrapPathErr(he.ErrInvalidAuthHeader))
-			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeInvalidHeader, he.ErrInvalidAuthHeader.Error())
+			log.Error(errutils.WrapPathErr(fmt.Errorf("invalid auth header")))
+			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
 
 		claims, err := h.authService.ParseToken(token)
 		if err != nil {
-			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeInvalidToken, he.ErrCannotParseToken.Error())
+			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
 
 		c.Set(userIdCtx, claims.UserID)
@@ -61,7 +62,6 @@ func (m *Auth) CheckRole(required e.Role) echo.MiddlewareFunc {
 			if !ok || rolePriority[role] < rolePriority[required] {
 				return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeForbidden, he.ErrNoRights.Error())
 			}
-
 			return next(c)
 		}
 	}

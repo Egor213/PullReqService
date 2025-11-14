@@ -51,9 +51,9 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 		if errors.Is(err, se.ErrPRExists) {
 			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrPRAlreadyExists.Error())
 		} else if errors.Is(err, se.ErrInactiveCreator) {
-			return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, he.ErrNoRights.Error())
-		} else if errors.Is(err, se.ErrNotFoundUserForPr) {
-			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, err.Error())
+			return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, err.Error())
+		} else if errors.Is(err, se.ErrNotFoundUserForPr) || errors.Is(err, se.ErrNotFoundTeam) {
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
@@ -120,11 +120,13 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 
 	if err != nil {
 		if errors.Is(err, se.ErrReviewerNotAssigned) {
-			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotAssigned, he.ErrNotFound.Error())
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotAssigned, he.ErrReviewerNotAssign.Error())
 		} else if errors.Is(err, se.ErrNoAvailableReviewers) {
-			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNoCandidate, he.ErrNotFound.Error())
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNoCandidate, he.ErrNoActiveCandidate.Error())
 		} else if errors.Is(err, se.ErrMergedPR) {
 			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRMerged, he.ErrPRMerged.Error())
+		} else if errors.Is(err, se.ErrNotFoundUser) || errors.Is(err, se.ErrNotFoundPR) {
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
