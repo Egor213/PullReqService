@@ -9,7 +9,6 @@ var (
 	ErrNotFoundUser      = errors.New("user not found")
 	ErrNotFoundReviewers = errors.New("reviewers not found")
 	ErrNotFoundPR        = errors.New("pull request not found")
-	ErrNotFoundUserForPr = errors.New("not found users for create pr")
 
 	ErrCannotParseToken         = errors.New("cannot parse token")
 	ErrCannotGetUser            = errors.New("cannot get user")

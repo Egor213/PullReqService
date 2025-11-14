@@ -90,7 +90,7 @@ func (r *UsersRepo) SetIsActive(ctx context.Context, userID string, isActive *bo
 
 func (r *UsersRepo) GetUserByID(ctx context.Context, userID string) (e.User, error) {
 	sql, args, _ := r.Builder.
-		Select("user_id", "username", "team_name", "is_active").
+		Select("user_id", "username", "COALESCE(team_name, '') AS team_name", "is_active").
 		From("users").
 		Where("user_id = ?", userID).
 		ToSql()

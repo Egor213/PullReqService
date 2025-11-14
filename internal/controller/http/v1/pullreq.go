@@ -52,7 +52,7 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrPRAlreadyExists.Error())
 		} else if errors.Is(err, se.ErrInactiveCreator) {
 			return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, err.Error())
-		} else if errors.Is(err, se.ErrNotFoundUserForPr) || errors.Is(err, se.ErrNotFoundTeam) {
+		} else if errors.Is(err, se.ErrNotFoundUser) || errors.Is(err, se.ErrNotFoundTeam) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())

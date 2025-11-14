@@ -40,7 +40,7 @@ func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.P
 		user, err := s.usersRepo.GetUserByID(ctx, in.AuthorID)
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
-			return se.HandleRepoNotFound(err, re.ErrNotFound, se.ErrCannotGetUser)
+			return se.HandleRepoNotFound(err, se.ErrNotFoundUser, se.ErrCannotGetUser)
 		}
 
 		if user.IsActive == nil || !*user.IsActive {
@@ -62,7 +62,7 @@ func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.P
 			if errors.Is(err, re.ErrAlreadyExists) {
 				return se.ErrPRExists
 			}
-			return se.HandleRepoNotFound(err, se.ErrNotFoundUserForPr, se.ErrCannotCreatePR)
+			return se.HandleRepoNotFound(err, se.ErrNotFoundUser, se.ErrCannotCreatePR)
 		}
 
 		pr.Reviewers, err = s.AssignReviewers(ctx, sd.AssignReviewersInput{
