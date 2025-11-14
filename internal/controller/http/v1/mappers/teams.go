@@ -93,3 +93,15 @@ func ToGetReviewOutput(userID string, prs []e.PullRequestShort) hd.GetReviewOutp
 		PullReq: ToPullRequestShortDTOs(prs),
 	}
 }
+
+func ToGetTeamOutput(team e.Team) hd.GetTeamOutput {
+	return hd.GetTeamOutput{
+		TeamName: team.TeamName,
+		Members: []hd.AddTeamInput{
+			{
+				TeamName: team.TeamName,
+				Members:  ToTeamMemberInputs(team.Members),
+			},
+		},
+	}
+}

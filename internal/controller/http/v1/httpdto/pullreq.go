@@ -3,9 +3,9 @@ package httpdto
 import "time"
 
 type CreatePRInput struct {
-	PullReqID string `json:"pull_request_id" validate:"required"`
-	NamePR    string `json:"pull_request_name" validate:"required"`
-	AuthorID  string `json:"author_id" validate:"required"`
+	PullReqID string `json:"pull_request_id" validate:"required,max=100"`
+	NamePR    string `json:"pull_request_name" validate:"required,max=100"`
+	AuthorID  string `json:"author_id" validate:"required,max=100"`
 }
 
 type CreatePROutput struct {
@@ -21,7 +21,7 @@ type PullRequestDTO struct {
 }
 
 type GetPRInput struct {
-	PRID string `query:"pr_id" validate:"required"`
+	PRID string `query:"pr_id" validate:"required,max=100"`
 }
 
 type GetPROutput struct {
@@ -31,8 +31,8 @@ type GetPROutput struct {
 }
 
 type ReassignReviewerInput struct {
-	PullReqID   string `json:"pull_request_id" validate:"required"`
-	OldReviewer string `json:"old_reviewer_id" validate:"required"`
+	PullReqID   string `json:"pull_request_id" validate:"required,max=100"`
+	OldReviewer string `json:"old_reviewer_id" validate:"required,max=100"`
 }
 
 type ReassignReviewerOutput struct {
@@ -48,7 +48,7 @@ type PullRequestShortDTO struct {
 }
 
 type GetReviewInput struct {
-	UserID string `query:"user_id" validate:"required"`
+	UserID string `query:"user_id" validate:"required,max=100"`
 }
 
 type GetReviewOutput struct {
@@ -57,7 +57,7 @@ type GetReviewOutput struct {
 }
 
 type MergePRInput struct {
-	PullReqID string `json:"pull_request_id" validate:"required"`
+	PullReqID string `json:"pull_request_id" validate:"required,max=100"`
 }
 
 type MergePRODTO struct {

@@ -79,6 +79,6 @@ func (r *TeamsRoutes) getTeam(c echo.Context) error {
 		return err
 
 	}
-
-	return c.JSON(http.StatusOK, team)
+	output := httpmappers.ToGetTeamOutput(team)
+	return c.JSON(http.StatusOK, output)
 }

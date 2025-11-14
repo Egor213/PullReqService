@@ -57,7 +57,9 @@ func (r *UsersRoutes) setIsActive(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, hd.SetIsActiveOutput{User: user})
+	return c.JSON(http.StatusOK, hd.SetIsActiveOutput{
+		User: user,
+	})
 }
 
 func (r *UsersRoutes) getReview(c echo.Context) error {
