@@ -209,3 +209,20 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 	}
 	return out, nil
 }
+
+func (s *PullReqService) GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error) {
+	_, err := s.usersRepo.GetUserByID(ctx, uID)
+	if err != nil {
+		if errors.Is(err, re.ErrNotFound) {
+			return nil, se.ErrUserNotFound
+		}
+		return nil, se.ErrCannotGetUser
+	}
+
+	prs, err := s.prRepo.GetPRsByReviewer(ctx, uID)
+	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
+		return nil, se.ErrCannotGetPR
+	}
+	return prs, nil
+}

@@ -29,6 +29,7 @@ type PullReq interface {
 	AssignReviewers(ctx context.Context, prID string, reviewers []string) ([]string, error)
 	SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error
 	ChangeReviewer(ctx context.Context, in rd.ChangeReviewerInput) error
+	GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error)
 }
 
 type Repositories struct {

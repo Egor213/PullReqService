@@ -171,3 +171,26 @@ func (r *PullReqRepo) ChangeReviewer(ctx context.Context, in rd.ChangeReviewerIn
 	}
 	return nil
 }
+
+func (r *PullReqRepo) GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error) {
+	sql, args, _ := r.Builder.
+		Select("prs.pr_id", "prs.title", "prs.author_id", "prs.status").
+		From("prs").
+		Join("pr_reviewers ON pr_reviewers.pr_id = prs.pr_id").
+		Where("pr_reviewers.user_id = ?", uID).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	rows, err := conn.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, errutils.WrapPathErr(err)
+	}
+	defer rows.Close()
+
+	prs, err := pgx.CollectRows(rows, pgx.RowToStructByName[e.PullRequestShort])
+	if err != nil {
+		return nil, errutils.WrapPathErr(err)
+	}
+
+	return prs, nil
+}

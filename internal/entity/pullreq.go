@@ -10,12 +10,19 @@ const (
 )
 
 type PullRequest struct {
-	CreatedAt         *time.Time
-	MergedAt          *time.Time
-	PullReqID         string
-	NamePR            string
-	AuthorID          string
-	Status            PRStatus
-	NeedMoreReviewers bool
-	Reviewers         []string
+	CreatedAt         *time.Time `db:"created_at"`
+	MergedAt          *time.Time `db:"merged_at"`
+	PullReqID         string     `db:"pr_id"`
+	NamePR            string     `db:"title"`
+	AuthorID          string     `db:"author_id"`
+	Status            PRStatus   `db:"status"`
+	NeedMoreReviewers bool       `db:"need_more_reviewers"`
+	Reviewers         []string   `db:"-"`
+}
+
+type PullRequestShort struct {
+	PullReqID string   `db:"pr_id"`
+	NamePR    string   `db:"title"`
+	AuthorID  string   `db:"author_id"`
+	Status    PRStatus `db:"status"`
 }

@@ -33,7 +33,7 @@ func ConfigureRouter(handler *echo.Echo, services *service.Services) {
 	api := handler.Group("/api/v1")
 	{
 		newTeamsRoutes(api.Group("/team"), services.Teams, authMW)
-		newUsersRoutes(api.Group("/users"), services.Users, authMW)
+		newUsersRoutes(api.Group("/users"), services.Users, services.PullReq, authMW)
 		newPullReqRoutes(api.Group("/pullRequest"), services.PullReq, authMW)
 	}
 }
