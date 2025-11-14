@@ -7,8 +7,8 @@ import (
 	e "app/internal/entity"
 	"app/internal/repo"
 	re "app/internal/repo/errors"
-	sd "app/internal/service/servdto"
-	se "app/internal/service/serverrs"
+	sd "app/internal/service/dto"
+	se "app/internal/service/errors"
 )
 
 type UsersService struct {

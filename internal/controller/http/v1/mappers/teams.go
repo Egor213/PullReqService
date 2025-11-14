@@ -3,7 +3,7 @@ package mapper
 import (
 	hd "app/internal/controller/http/v1/dto"
 	e "app/internal/entity"
-	sd "app/internal/service/servdto"
+	sd "app/internal/service/dto"
 )
 
 func ToTeamMemberDTO(m e.TeamMember) sd.TeamMemberDTO {

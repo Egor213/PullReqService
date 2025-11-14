@@ -6,7 +6,7 @@ import (
 
 	e "app/internal/entity"
 	"app/internal/repo"
-	sd "app/internal/service/servdto"
+	sd "app/internal/service/dto"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )

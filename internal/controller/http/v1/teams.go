@@ -11,7 +11,7 @@ import (
 	ut "app/internal/controller/http/v1/utils"
 	e "app/internal/entity"
 	"app/internal/service"
-	se "app/internal/service/serverrs"
+	se "app/internal/service/errors"
 	errutils "app/pkg/errors"
 
 	"github.com/labstack/echo/v4"

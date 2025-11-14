@@ -7,9 +7,9 @@ import (
 	e "app/internal/entity"
 	"app/internal/repo"
 	re "app/internal/repo/errors"
+	sd "app/internal/service/dto"
+	se "app/internal/service/errors"
 	smap "app/internal/service/mappers"
-	sd "app/internal/service/servdto"
-	se "app/internal/service/serverrs"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )

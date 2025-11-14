@@ -2,7 +2,7 @@ package servmappers
 
 import (
 	e "app/internal/entity"
-	"app/internal/service/servdto"
+	servdto "app/internal/service/dto"
 )
 
 func TeamMemberDTOToUser(t []servdto.TeamMemberDTO, team string) []e.User {
