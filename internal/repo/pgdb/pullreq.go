@@ -151,3 +151,23 @@ func (r *PullReqRepo) SetNeedMoreReviewrs(ctx context.Context, prID string, valu
 
 	return nil
 }
+
+func (r *PullReqRepo) ChangeReviewer(ctx context.Context, in repodto.ChangeReviewerInput) error {
+	sql, args, _ := r.Builder.
+		Update("pr_reviewers").
+		Set("user_id", in.NewReviewer).
+		Where("pr_id = ? AND user_id = ?", in.PullReqID, in.OldReviewer).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	cmdTag, err := conn.Exec(ctx, sql, args...)
+
+	if err != nil {
+		return errutils.WrapPathErr(err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return repoerrs.ErrNotFound
+	}
+	return nil
+}

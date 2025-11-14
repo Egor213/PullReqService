@@ -8,3 +8,9 @@ type CreatePRInput struct {
 	AuthorID  string
 	Status    entity.PRStatus
 }
+
+type ChangeReviewerInput struct {
+	PullReqID   string
+	NewReviewer string
+	OldReviewer string
+}

@@ -26,12 +26,3 @@ func TeamMembersToUsers(members []e.TeamMember, teamName string) []e.User {
 	}
 	return users
 }
-
-func TeamMemberToUser(member e.TeamMember, teamName string) e.User {
-	return e.User{
-		UserID:   member.UserID,
-		Username: member.Username,
-		TeamName: teamName,
-		IsActive: member.IsActive,
-	}
-}

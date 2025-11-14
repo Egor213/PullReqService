@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	e "app/internal/entity"
-	entitymappers "app/internal/entity/mappers"
 	"app/internal/repo"
 	"app/internal/repo/repoerrs"
+	servmappers "app/internal/service/mappers"
 	"app/internal/service/servdto"
 	"app/internal/service/serverrs"
 
@@ -28,7 +28,8 @@ func NewTeamsService(tRepo repo.Teams, uRepo repo.Users, tr *manager.Manager) *T
 	}
 }
 
-func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Team, error) {
+func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in servdto.CrOrUpTeamInput) (e.Team, error) {
+	members := servmappers.TeamMemberDTOToMember(in.Members)
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		team, err := s.teamsRepo.GetTeam(ctx, in.TeamName)
 
@@ -37,27 +38,25 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Tea
 				return err
 			}
 
-			if _, err := s.teamsRepo.CreateTeam(ctx, in.TeamName); err != nil {
+			_, err = s.teamsRepo.CreateTeam(ctx, in.TeamName)
+			if err != nil {
 				return err
 			}
 
-			for _, m := range in.Members {
-				if err := s.usersRepo.Upsert(ctx, entitymappers.TeamMemberToUser(m, in.TeamName)); err != nil {
-					return err
-				}
+			err := s.usersRepo.UpsertBulk(ctx, servmappers.TeamMemberDTOToUser(in.Members, in.TeamName))
+			if err != nil {
+				return err
 			}
 
 			return nil
 		}
 
-		if CompareMembers(team.Members, in.Members) {
+		if CompareMembers(team.Members, members) {
 			return serverrs.ErrTeamWithUsersExists
 		}
 
-		if err := s.ReplaceTeamMembers(ctx, servdto.ReplaceMembersInput{
-			TeamName: in.TeamName,
-			Members:  in.Members,
-		}); err != nil && !errors.Is(err, repoerrs.ErrNoRowsDeleted) {
+		err = s.ReplaceTeamMembers(ctx, servdto.ReplaceMembersInput(in))
+		if err != nil && !errors.Is(err, repoerrs.ErrNoRowsDeleted) {
 			return err
 		}
 
@@ -68,7 +67,10 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Tea
 		return e.Team{}, err
 	}
 
-	return in, nil
+	return e.Team{
+		TeamName: in.TeamName,
+		Members:  members,
+	}, nil
 }
 
 func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in servdto.ReplaceMembersInput) error {
@@ -79,11 +81,9 @@ func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in servdto.Replac
 			return err
 		}
 
-		for _, m := range in.Members {
-			err := s.usersRepo.Upsert(ctx, entitymappers.TeamMemberToUser(m, in.TeamName))
-			if err != nil {
-				return err
-			}
+		err = s.usersRepo.UpsertBulk(ctx, servmappers.TeamMemberDTOToUser(in.Members, in.TeamName))
+		if err != nil {
+			return err
 		}
 
 		return nil

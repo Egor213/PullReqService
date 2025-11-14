@@ -16,7 +16,7 @@ type Teams interface {
 }
 
 type Users interface {
-	Upsert(ctx context.Context, user e.User) error
+	UpsertBulk(ctx context.Context, user []e.User) error
 	DeleteUsersByTeam(ctx context.Context, teamName string) error
 	SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error)
 	GetUserByID(ctx context.Context, userID string) (e.User, error)

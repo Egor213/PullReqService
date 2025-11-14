@@ -22,14 +22,21 @@ func NewUsersRepo(pg *postgres.Postgres) *UsersRepo {
 	return &UsersRepo{pg}
 }
 
-func (r *UsersRepo) Upsert(ctx context.Context, u e.User) error {
-	sql, args, _ := r.Builder.
+func (r *UsersRepo) UpsertBulk(ctx context.Context, u []e.User) error {
+	if len(u) == 0 {
+		return nil
+	}
+
+	builder := r.Builder.
 		Insert("users").
 		Columns("user_id", "username", "team_name", "is_active").
-		Values(u.UserID, u.Username, u.TeamName, u.IsActive).
-		Suffix("ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username, team_name = EXCLUDED.team_name, is_active = EXCLUDED.is_active").
-		ToSql()
+		Suffix("ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username, team_name = EXCLUDED.team_name, is_active = EXCLUDED.is_active")
 
+	for _, user := range u {
+		builder = builder.Values(user.UserID, user.Username, user.TeamName, user.IsActive)
+	}
+
+	sql, args, _ := builder.ToSql()
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
 	_, err := conn.Exec(ctx, sql, args...)
 	if err != nil {

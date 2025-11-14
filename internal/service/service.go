@@ -12,14 +12,13 @@ import (
 )
 
 type Teams interface {
-	// TODO: Возможно не очень круто использовать сущности в инпутах, так что заменить!
-	CreateOrUpdateTeam(ctx context.Context, in e.Team) (e.Team, error)
+	CreateOrUpdateTeam(ctx context.Context, in servdto.CrOrUpTeamInput) (e.Team, error)
 	ReplaceTeamMembers(ctx context.Context, in servdto.ReplaceMembersInput) error
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 }
 
 type Users interface {
-	SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error)
+	SetIsActive(ctx context.Context, in servdto.SetIsActiveInput) (e.User, error)
 }
 
 type PullReq interface {

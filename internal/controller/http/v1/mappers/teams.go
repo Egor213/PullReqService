@@ -3,18 +3,19 @@ package httpmappers
 import (
 	"app/internal/controller/http/v1/httpdto"
 	"app/internal/entity"
+	"app/internal/service/servdto"
 )
 
-func ToEntityTeam(input httpdto.AddTeamInput) entity.Team {
-	members := make([]entity.TeamMember, len(input.Members))
+func ToCrOrUpTeamInput(input httpdto.AddTeamInput) servdto.CrOrUpTeamInput {
+	members := make([]servdto.TeamMemberDTO, len(input.Members))
 	for i, m := range input.Members {
-		members[i] = entity.TeamMember{
+		members[i] = servdto.TeamMemberDTO{
 			UserID:   m.UserID,
 			Username: m.Username,
 			IsActive: m.IsActive,
 		}
 	}
-	return entity.Team{
+	return servdto.CrOrUpTeamInput{
 		TeamName: input.TeamName,
 		Members:  members,
 	}

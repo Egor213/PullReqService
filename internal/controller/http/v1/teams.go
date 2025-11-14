@@ -40,7 +40,7 @@ func (r *TeamsRoutes) addTeam(c echo.Context) error {
 		return err
 	}
 
-	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), httpmappers.ToEntityTeam(input))
+	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), httpmappers.ToCrOrUpTeamInput(input))
 	if err != nil {
 		if errors.Is(err, serverrs.ErrTeamWithUsersExists) {
 			ut.NewErrReasonJSON(c, http.StatusBadRequest, httperrs.ErrCodeTeamExists, err.Error())

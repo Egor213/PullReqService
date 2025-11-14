@@ -10,6 +10,7 @@ import (
 	mw "app/internal/controller/http/v1/midlleware"
 	e "app/internal/entity"
 	"app/internal/service"
+	"app/internal/service/servdto"
 	"app/internal/service/serverrs"
 
 	"github.com/labstack/echo/v4"
@@ -39,7 +40,10 @@ func (r *UsersRoutes) setIsActive(c echo.Context) error {
 		return err
 	}
 
-	user, err := r.usersService.SetIsActive(c.Request().Context(), input.UserID, input.IsActive)
+	user, err := r.usersService.SetIsActive(c.Request().Context(), servdto.SetIsActiveInput{
+		UserID:   input.UserID,
+		IsActive: input.IsActive,
+	})
 	if err != nil {
 		if errors.Is(err, serverrs.ErrUserNotFound) {
 			ut.NewErrReasonJSON(c, http.StatusNotFound, httperrs.ErrCodeNotFound, httperrs.ErrNotFound.Error())
