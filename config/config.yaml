@@ -3,10 +3,10 @@ app:
   version: "1.0.0"
 
 log:
-  level: "debug"
+  level: "info"
 
 postgres:
   max_pool_size: 12
 
 jwt:
-  token_ttl: 120m
+  token_ttl: 10m

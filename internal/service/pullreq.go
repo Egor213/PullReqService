@@ -224,21 +224,30 @@ func (s *PullReqService) GetPRsByReviewer(ctx context.Context, uID string) ([]e.
 }
 
 func (s *PullReqService) MergePR(ctx context.Context, prID string) (e.PullRequest, error) {
-	pr, err := s.prRepo.GetPR(ctx, prID)
-	if err != nil {
-		log.Error(errutils.WrapPathErr(err))
-		return e.PullRequest{}, se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
-	}
-
-	if pr.Status != e.StatusMerged {
-		mergedAt, err := s.prRepo.MergePR(ctx, prID)
+	var pr e.PullRequest
+	err := s.trManager.Do(ctx, func(ctx context.Context) error {
+		var err error
+		pr, err = s.prRepo.GetPR(ctx, prID)
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
-			return e.PullRequest{}, se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
+			return se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
 		}
-		pr.Status = e.StatusMerged
-		pr.MergedAt = mergedAt
-	}
 
+		if pr.Status != e.StatusMerged {
+			mergedAt, err := s.prRepo.MergePR(ctx, prID)
+			if err != nil {
+				log.Error(errutils.WrapPathErr(err))
+				return se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
+			}
+			pr.Status = e.StatusMerged
+			pr.MergedAt = mergedAt
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
+		return e.PullRequest{}, err
+	}
 	return pr, nil
 }
