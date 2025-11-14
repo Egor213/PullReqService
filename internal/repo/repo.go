@@ -5,8 +5,8 @@ import (
 	"time"
 
 	e "app/internal/entity"
+	rd "app/internal/repo/dto"
 	"app/internal/repo/pgdb"
-	rd "app/internal/repo/repodto"
 	"app/pkg/postgres"
 )
 

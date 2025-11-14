@@ -9,7 +9,7 @@ import (
 
 	e "app/internal/entity"
 	entitymappers "app/internal/entity/mappers"
-	repoerrs "app/internal/repo/repoerrs"
+	repoerrs "app/internal/repo/errors"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"

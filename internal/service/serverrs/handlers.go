@@ -1,7 +1,7 @@
 package serverrs
 
 import (
-	"app/internal/repo/repoerrs"
+	repoerrs "app/internal/repo/errors"
 	"errors"
 )
 

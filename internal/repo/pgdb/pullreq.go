@@ -2,8 +2,8 @@ package pgdb
 
 import (
 	e "app/internal/entity"
-	rd "app/internal/repo/repodto"
-	re "app/internal/repo/repoerrs"
+	rd "app/internal/repo/dto"
+	re "app/internal/repo/errors"
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
 	"context"

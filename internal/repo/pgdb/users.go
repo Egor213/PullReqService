@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	e "app/internal/entity"
-	"app/internal/repo/repoerrs"
+	repoerrs "app/internal/repo/errors"
 	errutils "app/pkg/errors"
 	"app/pkg/postgres"
 

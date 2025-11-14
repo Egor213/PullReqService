@@ -6,7 +6,7 @@ import (
 
 	e "app/internal/entity"
 	"app/internal/repo"
-	re "app/internal/repo/repoerrs"
+	re "app/internal/repo/errors"
 	smap "app/internal/service/mappers"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"

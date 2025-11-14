@@ -3,8 +3,8 @@ package service
 import (
 	e "app/internal/entity"
 	"app/internal/repo"
-	rd "app/internal/repo/repodto"
-	re "app/internal/repo/repoerrs"
+	rd "app/internal/repo/dto"
+	re "app/internal/repo/errors"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"
 	"context"
