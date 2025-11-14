@@ -28,8 +28,8 @@ func newUsersRoutes(g *echo.Group, uServ service.Users, prServ service.PullReq, 
 		prService: prServ,
 	}
 
+	g.GET("/getReview", r.getReview, m.UserIdentity, m.CheckRole(e.RoleUser))
 	g.POST("/setIsActive", r.setIsActive, m.UserIdentity, m.CheckRole(e.RoleAdmin))
-	g.GET("/getReview", r.getReview)
 }
 
 func (r *UsersRoutes) setIsActive(c echo.Context) error {

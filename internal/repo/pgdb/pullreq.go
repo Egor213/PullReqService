@@ -8,6 +8,7 @@ import (
 	"app/pkg/postgres"
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -195,24 +196,25 @@ func (r *PullReqRepo) GetPRsByReviewer(ctx context.Context, uID string) ([]e.Pul
 	return prs, nil
 }
 
-func (r *PullReqRepo) MergePR(ctx context.Context, prID string) error {
+func (r *PullReqRepo) MergePR(ctx context.Context, prID string) (*time.Time, error) {
 	sql, args, _ := r.Builder.
 		Update("prs").
 		Set("status", e.StatusMerged).
 		Set("merged_at", "NOW()").
 		Where("pr_id = ? AND status = ?", prID, e.StatusOpen).
+		Suffix("RETURNING merged_at").
 		ToSql()
 
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
 
-	cmdTag, err := conn.Exec(ctx, sql, args...)
-
+	var mergedAt time.Time
+	err := conn.QueryRow(ctx, sql, args...).Scan(&mergedAt)
 	if err != nil {
-		return errutils.WrapPathErr(err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, re.ErrNotFound
+		}
+		return nil, errutils.WrapPathErr(err)
 	}
 
-	if cmdTag.RowsAffected() == 0 {
-		return re.ErrNotFound
-	}
-	return nil
+	return &mergedAt, nil
 }

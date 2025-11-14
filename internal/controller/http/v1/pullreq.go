@@ -5,6 +5,7 @@ import (
 	he "app/internal/controller/http/v1/httperrs"
 	ut "app/internal/controller/http/v1/httputils"
 	mw "app/internal/controller/http/v1/midlleware"
+	e "app/internal/entity"
 	"app/internal/service"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"
@@ -23,13 +24,12 @@ func newPullReqRoutes(g *echo.Group, prService service.PullReq, m *mw.Auth) {
 		prService: prService,
 	}
 
-	g.GET("/get", r.getPR)
-	g.POST("/merge", r.mergePR)
-	g.POST("/create", r.createPR)
-	g.POST("/reassign", r.reassignReviewer)
+	g.GET("/get", r.getPR, m.UserIdentity, m.CheckRole(e.RoleAdmin))
+	g.POST("/merge", r.mergePR, m.UserIdentity, m.CheckRole(e.RoleAdmin))
+	g.POST("/create", r.createPR, m.UserIdentity, m.CheckRole(e.RoleAdmin))
+	g.POST("/reassign", r.reassignReviewer, m.UserIdentity, m.CheckRole(e.RoleAdmin))
 }
 
-// TODO: если неактивный пользователь захочет создать PR?
 func (r *PullReqRoutes) createPR(c echo.Context) error {
 	var input hd.CreatePRInput
 
@@ -51,7 +51,10 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 
 	if err != nil {
 		if errors.Is(err, se.ErrPRExists) {
-			ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, err.Error())
+			ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrAlreadyExists.Error())
+			return err
+		} else if errors.Is(err, se.ErrInactiveCreator) {
+			ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, he.ErrNoRights.Error())
 			return err
 		}
 		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
@@ -125,8 +128,11 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 	})
 
 	if err != nil {
-		if errors.Is(err, se.ErrReviewerNotAssigned) || errors.Is(err, se.ErrNoAvailableReviewers) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
+		if errors.Is(err, se.ErrReviewerNotAssigned) {
+			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotAssigned, he.ErrNotFound.Error())
+			return err
+		} else if errors.Is(err, se.ErrNoAvailableReviewers) {
+			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNoCandidate, he.ErrNotFound.Error())
 			return err
 		} else if errors.Is(err, se.ErrMergedPR) {
 			ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRMerged, he.ErrPRMerged.Error())

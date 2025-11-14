@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"time"
 
 	e "app/internal/entity"
 	"app/internal/repo/pgdb"
@@ -30,7 +31,7 @@ type PullReq interface {
 	SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error
 	ChangeReviewer(ctx context.Context, in rd.ChangeReviewerInput) error
 	GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error)
-	MergePR(ctx context.Context, prID string) error
+	MergePR(ctx context.Context, prID string) (*time.Time, error)
 }
 
 type Repositories struct {

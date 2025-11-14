@@ -18,6 +18,11 @@ const (
 	roleKey   = "Role"
 )
 
+var rolePriority = map[e.Role]int{
+	e.RoleUser:  1,
+	e.RoleAdmin: 2,
+}
+
 type Auth struct {
 	authService service.Auth
 }
@@ -56,7 +61,7 @@ func (m *Auth) CheckRole(required e.Role) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			role, ok := c.Get(roleKey).(e.Role)
-			if !ok || role != required {
+			if !ok || rolePriority[role] < rolePriority[required] {
 				ut.NewErrReasonJSON(c, http.StatusForbidden, httperrs.ErrCodeForbidden, httperrs.ErrNoRights.Error())
 				return nil
 			}

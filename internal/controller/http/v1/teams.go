@@ -9,6 +9,7 @@ import (
 	ut "app/internal/controller/http/v1/httputils"
 	httpmappers "app/internal/controller/http/v1/mappers"
 	mw "app/internal/controller/http/v1/midlleware"
+	e "app/internal/entity"
 	"app/internal/service"
 	se "app/internal/service/serverrs"
 
@@ -25,7 +26,7 @@ func newTeamsRoutes(g *echo.Group, teamsServ service.Teams, m *mw.Auth) {
 	}
 
 	g.POST("/add", r.addTeam)
-	g.GET("/get", r.getTeam, m.UserIdentity)
+	g.GET("/get", r.getTeam, m.UserIdentity, m.CheckRole(e.RoleUser))
 }
 
 func (r *TeamsRoutes) addTeam(c echo.Context) error {

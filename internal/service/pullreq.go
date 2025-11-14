@@ -228,14 +228,18 @@ func (s *PullReqService) GetPRsByReviewer(ctx context.Context, uID string) ([]e.
 }
 
 func (s *PullReqService) MergePR(ctx context.Context, prID string) (e.PullRequest, error) {
-	err := s.prRepo.MergePR(ctx, prID)
+	pr, err := s.prRepo.GetPR(ctx, prID)
 	if err != nil {
 		return e.PullRequest{}, se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
 	}
 
-	pr, err := s.prRepo.GetPR(ctx, prID)
-	if err != nil {
-		return e.PullRequest{}, se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
+	if pr.Status != e.StatusMerged {
+		mergedAt, err := s.prRepo.MergePR(ctx, prID)
+		if err != nil {
+			return e.PullRequest{}, se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
+		}
+		pr.Status = e.StatusMerged
+		pr.MergedAt = mergedAt
 	}
 
 	return pr, nil
