@@ -7,6 +7,7 @@ import (
 	re "app/internal/repo/errors"
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
+	errutils "app/pkg/errors"
 	"context"
 	"errors"
 	"math/rand/v2"
@@ -16,6 +17,7 @@ import (
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/settings"
 	"github.com/jackc/pgx/v5"
+	log "github.com/sirupsen/logrus"
 )
 
 type PullReqService struct {
@@ -37,6 +39,7 @@ func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.P
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		user, err := s.usersRepo.GetUserByID(ctx, in.AuthorID)
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			if errors.Is(err, re.ErrNotFound) {
 				return se.ErrUserNotFound
 			}
@@ -54,6 +57,7 @@ func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.P
 			Status:    e.StatusOpen,
 		})
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			if errors.Is(err, re.ErrAlreadyExists) {
 				return se.ErrPRExists
 			}
@@ -66,12 +70,14 @@ func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.P
 			ExcludeUsers: []string{in.AuthorID},
 		})
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			return err
 		}
 
 		return nil
 	})
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		return e.PullRequest{}, err
 	}
 	return pr, nil
@@ -83,11 +89,13 @@ func (s *PullReqService) AssignReviewers(ctx context.Context, in sd.AssignReview
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		users, err := s.usersRepo.GetActiveUsersTeam(ctx, in.AuthorTeam, in.ExcludeUsers)
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			return se.ErrCannotGetUser
 		}
 
 		if len(users) == 0 {
 			if err := s.prRepo.SetNeedMoreReviewrs(ctx, in.PullReqID, true); err != nil {
+				log.Error(errutils.WrapPathErr(err))
 				return err
 			}
 			return nil
@@ -101,17 +109,20 @@ func (s *PullReqService) AssignReviewers(ctx context.Context, in sd.AssignReview
 		selectedReviewers := users[:count]
 		out, err = s.prRepo.AssignReviewers(ctx, in.PullReqID, selectedReviewers)
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			return err
 		}
 
 		needMore := count < reviewersCount
 		if err := s.prRepo.SetNeedMoreReviewrs(ctx, in.PullReqID, needMore); err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			return err
 		}
 
 		return nil
 	})
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		return nil, err
 	}
 	return out, nil
@@ -120,6 +131,7 @@ func (s *PullReqService) AssignReviewers(ctx context.Context, in sd.AssignReview
 func (s *PullReqService) GetPR(ctx context.Context, prID string) (e.PullRequest, error) {
 	pr, err := s.prRepo.GetPR(ctx, prID)
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, re.ErrNotFound) {
 			return e.PullRequest{}, se.ErrNotFoundPR
 		}
@@ -138,6 +150,7 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 		pr, err := s.prRepo.GetPR(ctx, in.PullReqID)
 
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			if errors.Is(err, re.ErrNotFound) {
 				return se.ErrNotFoundPR
 			}
@@ -160,6 +173,7 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 
 		user, err := s.usersRepo.GetUserByID(ctx, pr.AuthorID)
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			if errors.Is(err, re.ErrNotFound) {
 				return se.ErrUserNotFound
 			}
@@ -168,6 +182,7 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 
 		users, err := s.usersRepo.GetActiveUsersTeam(ctx, user.TeamName, exIDs)
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			return se.ErrCannotGetUser
 		}
 
@@ -183,6 +198,7 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 		})
 
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			if errors.Is(err, re.ErrNotFound) {
 				return se.ErrNotFoundReviewers
 			}
@@ -197,6 +213,7 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 		return nil
 	})
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		return sd.ReassignReviewerOutput{}, err
 	}
 	return out, nil
@@ -205,6 +222,7 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 func (s *PullReqService) GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error) {
 	_, err := s.usersRepo.GetUserByID(ctx, uID)
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, re.ErrNotFound) {
 			return nil, se.ErrUserNotFound
 		}
@@ -213,6 +231,7 @@ func (s *PullReqService) GetPRsByReviewer(ctx context.Context, uID string) ([]e.
 
 	prs, err := s.prRepo.GetPRsByReviewer(ctx, uID)
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		return nil, se.ErrCannotGetPR
 	}
 	return prs, nil
@@ -221,12 +240,14 @@ func (s *PullReqService) GetPRsByReviewer(ctx context.Context, uID string) ([]e.
 func (s *PullReqService) MergePR(ctx context.Context, prID string) (e.PullRequest, error) {
 	pr, err := s.prRepo.GetPR(ctx, prID)
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		return e.PullRequest{}, se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
 	}
 
 	if pr.Status != e.StatusMerged {
 		mergedAt, err := s.prRepo.MergePR(ctx, prID)
 		if err != nil {
+			log.Error(errutils.WrapPathErr(err))
 			return e.PullRequest{}, se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
 		}
 		pr.Status = e.StatusMerged

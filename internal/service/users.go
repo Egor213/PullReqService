@@ -9,6 +9,9 @@ import (
 	re "app/internal/repo/errors"
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
+	errutils "app/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type UsersService struct {
@@ -24,6 +27,7 @@ func NewUsersService(uRepo repo.Users) *UsersService {
 func (s *UsersService) SetIsActive(ctx context.Context, in sd.SetIsActiveInput) (e.User, error) {
 	user, err := s.usersRepo.SetIsActive(ctx, in.UserID, in.IsActive)
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, re.ErrNotFound) {
 			return e.User{}, se.ErrUserNotFound
 		}

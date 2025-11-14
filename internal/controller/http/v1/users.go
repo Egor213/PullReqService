@@ -13,10 +13,8 @@ import (
 	"app/internal/service"
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
-	errutils "app/pkg/errors"
 
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 )
 
 type UsersRoutes struct {
@@ -49,7 +47,6 @@ func (r *UsersRoutes) setIsActive(c echo.Context) error {
 		IsActive: input.IsActive,
 	})
 	if err != nil {
-		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrUserNotFound) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
@@ -74,7 +71,6 @@ func (r *UsersRoutes) getReview(c echo.Context) error {
 
 	prs, err := r.prService.GetPRsByReviewer(c.Request().Context(), input.UserID)
 	if err != nil {
-		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrUserNotFound) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}

@@ -6,12 +6,14 @@ import (
 	repoerrs "app/internal/repo/errors"
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
+	errutils "app/pkg/errors"
 	"context"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/labstack/gommon/log"
 )
 
 type AuthService struct {
@@ -31,6 +33,7 @@ func NewAuthService(userRepo repo.Users, signKey string, tokenTTL time.Duration)
 func (s *AuthService) GenerateToken(ctx context.Context, in sd.GenTokenInput) (string, error) {
 	_, err := s.userRepo.GetUserByID(ctx, in.UserID)
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, repoerrs.ErrNotFound) {
 			return "", se.ErrUserNotFound
 		}
@@ -49,6 +52,7 @@ func (s *AuthService) GenerateToken(ctx context.Context, in sd.GenTokenInput) (s
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString([]byte(s.signKey))
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		return "", se.ErrCannotSignToken
 	}
 
@@ -64,6 +68,7 @@ func (s *AuthService) ParseToken(accessToken string) (e.ParsedToken, error) {
 	})
 
 	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorExpired != 0 {
 				return e.ParsedToken{}, se.ErrTokenExpired
@@ -74,6 +79,7 @@ func (s *AuthService) ParseToken(accessToken string) (e.ParsedToken, error) {
 
 	claims, ok := token.Claims.(*e.TokenClaims)
 	if !ok || !token.Valid {
+		log.Error(errutils.WrapPathErr(err))
 		return e.ParsedToken{}, se.ErrCannotParseToken
 	}
 

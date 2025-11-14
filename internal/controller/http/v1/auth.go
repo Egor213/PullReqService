@@ -7,12 +7,10 @@ import (
 	"app/internal/service"
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
-	errutils "app/pkg/errors"
 	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 )
 
 type authRoutes struct {
@@ -43,7 +41,6 @@ func (r *authRoutes) login(c echo.Context) error {
 		Role:   input.Role,
 	})
 	if err != nil {
-		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrUserNotFound) {
 			return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}

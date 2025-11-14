@@ -12,10 +12,8 @@ import (
 	e "app/internal/entity"
 	"app/internal/service"
 	se "app/internal/service/errors"
-	errutils "app/pkg/errors"
 
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 )
 
 type TeamsRoutes struct {
@@ -43,7 +41,6 @@ func (r *TeamsRoutes) addTeam(c echo.Context) error {
 
 	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), httpmappers.ToCrOrUpTeamInput(input))
 	if err != nil {
-		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrTeamWithUsersExists) {
 			return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeTeamExists, err.Error())
 		}
@@ -67,7 +64,6 @@ func (r *TeamsRoutes) getTeam(c echo.Context) error {
 
 	team, err := r.teamsService.GetTeam(c.Request().Context(), input.TeamName)
 	if err != nil {
-		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrNotFoundTeam) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
