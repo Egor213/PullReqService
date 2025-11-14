@@ -38,19 +38,22 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamI
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
 			if !errors.Is(err, re.ErrNotFound) {
-				return err
+				return se.ErrCannotGetTeam
 			}
 
 			_, err = s.teamsRepo.CreateTeam(ctx, in.TeamName)
 			if err != nil {
 				log.Error(errutils.WrapPathErr(err))
-				return err
+				if errors.Is(err, re.ErrAlreadyExists) {
+					return se.ErrTeamWExists
+				}
+				return se.ErrCannotCreateTeam
 			}
 
-			err := s.usersRepo.UpsertBulk(ctx, smap.TeamMemberDTOToUser(in.Members, in.TeamName))
+			err := s.usersRepo.UpsetBulk(ctx, smap.TeamMemberDTOToUser(in.Members, in.TeamName))
 			if err != nil {
 				log.Error(errutils.WrapPathErr(err))
-				return err
+				return se.ErrCannotUpsetUsers
 			}
 
 			return nil
@@ -61,7 +64,7 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamI
 		}
 
 		err = s.ReplaceTeamMembers(ctx, sd.ReplaceMembersInput(in))
-		if err != nil && !errors.Is(err, re.ErrNoRowsDeleted) {
+		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
 			return err
 		}
@@ -86,13 +89,13 @@ func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in sd.ReplaceMemb
 
 		if err != nil && !errors.Is(err, re.ErrNoRowsDeleted) {
 			log.Error(errutils.WrapPathErr(err))
-			return err
+			return se.ErrCannotDelUsersFromTeam
 		}
 
-		err = s.usersRepo.UpsertBulk(ctx, smap.TeamMemberDTOToUser(in.Members, in.TeamName))
+		err = s.usersRepo.UpsetBulk(ctx, smap.TeamMemberDTOToUser(in.Members, in.TeamName))
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
-			return err
+			return se.ErrCannotUpsetUsers
 		}
 
 		return nil
@@ -103,10 +106,7 @@ func (s *TeamsService) GetTeam(ctx context.Context, teamName string) (e.Team, er
 	team, err := s.teamsRepo.GetTeam(ctx, teamName)
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
-		if errors.Is(err, re.ErrNotFound) {
-			return e.Team{}, se.ErrNotFoundTeam
-		}
-		return e.Team{}, err
+		return e.Team{}, se.HandleRepoNotFound(err, se.ErrNotFoundTeam, se.ErrCannotGetTeam)
 	}
 
 	return team, nil

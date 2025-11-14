@@ -49,9 +49,11 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 
 	if err != nil {
 		if errors.Is(err, se.ErrPRExists) {
-			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrAlreadyExists.Error())
+			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrPRAlreadyExists.Error())
 		} else if errors.Is(err, se.ErrInactiveCreator) {
 			return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, he.ErrNoRights.Error())
+		} else if errors.Is(err, se.ErrNotFoundUserForPr) {
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, err.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}

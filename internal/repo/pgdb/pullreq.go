@@ -132,7 +132,7 @@ func (r *PullReqRepo) AssignReviewers(ctx context.Context, prID string, reviewer
 	return reviewers, nil
 }
 
-func (r *PullReqRepo) SetNeedMoreReviewrs(ctx context.Context, prID string, value bool) error {
+func (r *PullReqRepo) SetNeedMoreReviewers(ctx context.Context, prID string, value bool) error {
 	sql, args, _ := r.Builder.
 		Update("prs").
 		Set("need_more_reviewers", value).

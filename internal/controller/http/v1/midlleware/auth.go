@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -37,13 +37,12 @@ func (h *Auth) UserIdentity(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		token, ok := bearerToken(c.Request())
 		if !ok {
-			logrus.Error(errutils.WrapPathErr(he.ErrInvalidAuthHeader))
+			log.Error(errutils.WrapPathErr(he.ErrInvalidAuthHeader))
 			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeInvalidHeader, he.ErrInvalidAuthHeader.Error())
 		}
 
 		claims, err := h.authService.ParseToken(token)
 		if err != nil {
-			logrus.Error(errutils.WrapPathErr(err))
 			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeInvalidToken, he.ErrCannotParseToken.Error())
 		}
 
@@ -60,7 +59,6 @@ func (m *Auth) CheckRole(required e.Role) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			role, ok := c.Get(roleKey).(e.Role)
 			if !ok || rolePriority[role] < rolePriority[required] {
-				logrus.Error(errutils.WrapPathErr(he.ErrNoRights))
 				return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeForbidden, he.ErrNoRights.Error())
 			}
 

@@ -22,7 +22,7 @@ func NewUsersRepo(pg *postgres.Postgres) *UsersRepo {
 	return &UsersRepo{pg}
 }
 
-func (r *UsersRepo) UpsertBulk(ctx context.Context, u []e.User) error {
+func (r *UsersRepo) UpsetBulk(ctx context.Context, u []e.User) error {
 	if len(u) == 0 {
 		return nil
 	}

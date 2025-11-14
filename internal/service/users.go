@@ -2,11 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	e "app/internal/entity"
 	"app/internal/repo"
-	re "app/internal/repo/errors"
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
 	errutils "app/pkg/errors"
@@ -28,10 +26,7 @@ func (s *UsersService) SetIsActive(ctx context.Context, in sd.SetIsActiveInput) 
 	user, err := s.usersRepo.SetIsActive(ctx, in.UserID, in.IsActive)
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
-		if errors.Is(err, re.ErrNotFound) {
-			return e.User{}, se.ErrUserNotFound
-		}
-		return e.User{}, se.ErrCannotSetParam
+		return e.User{}, se.HandleRepoNotFound(err, se.ErrNotFoundUser, se.ErrCannotSetParam)
 	}
 
 	return user, nil

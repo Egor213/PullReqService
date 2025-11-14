@@ -47,7 +47,7 @@ func (r *UsersRoutes) setIsActive(c echo.Context) error {
 		IsActive: input.IsActive,
 	})
 	if err != nil {
-		if errors.Is(err, se.ErrUserNotFound) {
+		if errors.Is(err, se.ErrNotFoundUser) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
@@ -71,7 +71,7 @@ func (r *UsersRoutes) getReview(c echo.Context) error {
 
 	prs, err := r.prService.GetPRsByReviewer(c.Request().Context(), input.UserID)
 	if err != nil {
-		if errors.Is(err, se.ErrUserNotFound) {
+		if errors.Is(err, se.ErrNotFoundUser) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())

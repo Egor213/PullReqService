@@ -30,4 +30,5 @@ var (
 	ErrCannotParseToken  = errors.New("cannot parse token")
 	ErrNoRights          = errors.New("no rights")
 	ErrPRMerged          = errors.New("cannot reassign on merged PR")
+	ErrPRAlreadyExists   = errors.New("PR id already exists")
 )

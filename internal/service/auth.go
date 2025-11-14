@@ -35,7 +35,7 @@ func (s *AuthService) GenerateToken(ctx context.Context, in sd.GenTokenInput) (s
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, repoerrs.ErrNotFound) {
-			return "", se.ErrUserNotFound
+			return "", se.ErrNotFoundUser
 		}
 		return "", se.ErrCannotGetUser
 	}
