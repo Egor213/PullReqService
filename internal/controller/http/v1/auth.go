@@ -7,10 +7,12 @@ import (
 	"app/internal/service"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"
+	errutils "app/pkg/errors"
 	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type authRoutes struct {
@@ -29,13 +31,11 @@ func (r *authRoutes) login(c echo.Context) error {
 	var input hd.LoginInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	token, err := r.authService.GenerateToken(c.Request().Context(), sd.GenTokenInput{
@@ -43,12 +43,11 @@ func (r *authRoutes) login(c echo.Context) error {
 		Role:   input.Role,
 	})
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrUserNotFound) {
-			ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeNotFound, he.ErrNotFound.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	return c.JSON(http.StatusOK, hd.LoginOutput{

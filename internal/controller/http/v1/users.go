@@ -13,8 +13,10 @@ import (
 	"app/internal/service"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"
+	errutils "app/pkg/errors"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type UsersRoutes struct {
@@ -35,13 +37,11 @@ func newUsersRoutes(g *echo.Group, uServ service.Users, prServ service.PullReq, 
 func (r *UsersRoutes) setIsActive(c echo.Context) error {
 	var input hd.SetIsActiveInput
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	user, err := r.uService.SetIsActive(c.Request().Context(), sd.SetIsActiveInput{
@@ -49,12 +49,11 @@ func (r *UsersRoutes) setIsActive(c echo.Context) error {
 		IsActive: input.IsActive,
 	})
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrUserNotFound) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	return c.JSON(http.StatusOK, hd.SetIsActiveOutput{
@@ -66,23 +65,20 @@ func (r *UsersRoutes) getReview(c echo.Context) error {
 	var input hd.GetReviewInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	prs, err := r.prService.GetPRsByReviewer(c.Request().Context(), input.UserID)
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrUserNotFound) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 	output := hmap.ToGetReviewOutput(input.UserID, prs)
 	return c.JSON(http.StatusOK, output)

@@ -12,8 +12,10 @@ import (
 	e "app/internal/entity"
 	"app/internal/service"
 	se "app/internal/service/serverrs"
+	errutils "app/pkg/errors"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type TeamsRoutes struct {
@@ -32,23 +34,20 @@ func newTeamsRoutes(g *echo.Group, teamsServ service.Teams, m *mw.Auth) {
 func (r *TeamsRoutes) addTeam(c echo.Context) error {
 	var input hd.AddTeamInput
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	team, err := r.teamsService.CreateOrUpdateTeam(c.Request().Context(), httpmappers.ToCrOrUpTeamInput(input))
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrTeamWithUsersExists) {
-			ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeTeamExists, err.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeTeamExists, err.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	output := httpmappers.ToAddTeamOutput(team)
@@ -59,25 +58,20 @@ func (r *TeamsRoutes) getTeam(c echo.Context) error {
 	var input hd.GetTeamInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	team, err := r.teamsService.GetTeam(c.Request().Context(), input.TeamName)
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrNotFoundTeam) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
-			return err
-
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
-
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 	output := httpmappers.ToGetTeamOutput(team)
 	return c.JSON(http.StatusOK, output)

@@ -9,10 +9,12 @@ import (
 	"app/internal/service"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"
+	errutils "app/pkg/errors"
 	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type PullReqRoutes struct {
@@ -34,13 +36,11 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 	var input hd.CreatePRInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	pr, err := r.prService.CreatePR(c.Request().Context(), sd.CreatePRInput{
@@ -50,15 +50,13 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 	})
 
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrPRExists) {
-			ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrAlreadyExists.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrAlreadyExists.Error())
 		} else if errors.Is(err, se.ErrInactiveCreator) {
-			ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, he.ErrNoRights.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, he.ErrNoRights.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	return c.JSON(http.StatusCreated, hd.CreatePROutput{
@@ -76,23 +74,20 @@ func (r *PullReqRoutes) getPR(c echo.Context) error {
 	var input hd.GetPRInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	pr, err := r.prService.GetPR(c.Request().Context(), input.PRID)
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrNotFoundPR) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 
 	}
 
@@ -113,13 +108,11 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 	var input hd.ReassignReviewerInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	out, err := r.prService.ReassignReviewer(c.Request().Context(), sd.ReassignReviewerInput{
@@ -128,18 +121,15 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 	})
 
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrReviewerNotAssigned) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotAssigned, he.ErrNotFound.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotAssigned, he.ErrNotFound.Error())
 		} else if errors.Is(err, se.ErrNoAvailableReviewers) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNoCandidate, he.ErrNotFound.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNoCandidate, he.ErrNotFound.Error())
 		} else if errors.Is(err, se.ErrMergedPR) {
-			ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRMerged, he.ErrPRMerged.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRMerged, he.ErrPRMerged.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	return c.JSON(http.StatusOK, hd.ReassignReviewerOutput{
@@ -158,23 +148,20 @@ func (r *PullReqRoutes) mergePR(c echo.Context) error {
 	var input hd.MergePRInput
 
 	if err := c.Bind(&input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, he.ErrInvalidParams.Error())
 	}
 
 	if err := c.Validate(input); err != nil {
-		ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
 	pr, err := r.prService.MergePR(c.Request().Context(), input.PullReqID)
 	if err != nil {
+		logrus.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrNotFoundPR) {
-			ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
-			return err
+			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
-		ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
-		return err
+		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 	return c.JSON(http.StatusOK, hd.MergePROutput{
 		PullReq: hd.MergePRODTO{

@@ -1,16 +1,16 @@
 package mw
 
 import (
-	"app/internal/controller/http/v1/httperrs"
+	he "app/internal/controller/http/v1/httperrs"
 	ut "app/internal/controller/http/v1/httputils"
 	e "app/internal/entity"
 	"app/internal/service"
-	errorsutils "app/pkg/errors"
+	errutils "app/pkg/errors"
 	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -37,16 +37,14 @@ func (h *Auth) UserIdentity(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		token, ok := bearerToken(c.Request())
 		if !ok {
-			log.Errorf("bearerToken: %v", errorsutils.WrapPathErr(httperrs.ErrInvalidAuthHeader))
-			ut.NewErrReasonJSON(c, http.StatusUnauthorized, httperrs.ErrCodeInvalidHeader, httperrs.ErrInvalidAuthHeader.Error())
-			return nil
+			logrus.Error(errutils.WrapPathErr(he.ErrInvalidAuthHeader))
+			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeInvalidHeader, he.ErrInvalidAuthHeader.Error())
 		}
 
 		claims, err := h.authService.ParseToken(token)
 		if err != nil {
-			log.Error(errorsutils.WrapPathErr(err).Error())
-			ut.NewErrReasonJSON(c, http.StatusUnauthorized, httperrs.ErrCodeInvalidToken, httperrs.ErrCannotParseToken.Error())
-			return err
+			logrus.Error(errutils.WrapPathErr(err))
+			return ut.NewErrReasonJSON(c, http.StatusUnauthorized, he.ErrCodeInvalidToken, he.ErrCannotParseToken.Error())
 		}
 
 		c.Set(userIdCtx, claims.UserID)
@@ -62,8 +60,8 @@ func (m *Auth) CheckRole(required e.Role) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			role, ok := c.Get(roleKey).(e.Role)
 			if !ok || rolePriority[role] < rolePriority[required] {
-				ut.NewErrReasonJSON(c, http.StatusForbidden, httperrs.ErrCodeForbidden, httperrs.ErrNoRights.Error())
-				return nil
+				logrus.Error(errutils.WrapPathErr(he.ErrNoRights))
+				return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeForbidden, he.ErrNoRights.Error())
 			}
 
 			return next(c)
