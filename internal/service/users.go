@@ -8,7 +8,7 @@ import (
 	"app/internal/repo"
 	re "app/internal/repo/repoerrs"
 	sd "app/internal/service/servdto"
-	"app/internal/service/serverrs"
+	se "app/internal/service/serverrs"
 )
 
 type UsersService struct {
@@ -25,9 +25,9 @@ func (s *UsersService) SetIsActive(ctx context.Context, in sd.SetIsActiveInput) 
 	user, err := s.usersRepo.SetIsActive(ctx, in.UserID, in.IsActive)
 	if err != nil {
 		if errors.Is(err, re.ErrNotFound) {
-			return e.User{}, serverrs.ErrUserNotFound
+			return e.User{}, se.ErrUserNotFound
 		}
-		return e.User{}, serverrs.ErrCannotSetParam
+		return e.User{}, se.ErrCannotSetParam
 	}
 
 	return user, nil

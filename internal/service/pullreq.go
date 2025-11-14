@@ -7,7 +7,6 @@ import (
 	re "app/internal/repo/repoerrs"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"
-	errutils "app/pkg/errors"
 	"context"
 	"errors"
 	"math/rand/v2"
@@ -17,7 +16,6 @@ import (
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/settings"
 	"github.com/jackc/pgx/v5"
-	log "github.com/sirupsen/logrus"
 )
 
 type PullReqService struct {
@@ -59,7 +57,6 @@ func (s *PullReqService) CreatePR(ctx context.Context, in sd.CreatePRInput) (e.P
 			if errors.Is(err, re.ErrAlreadyExists) {
 				return se.ErrPRExists
 			}
-			log.Error(errutils.WrapPathErr(err))
 			return se.ErrCreatePR
 		}
 
@@ -126,8 +123,6 @@ func (s *PullReqService) GetPR(ctx context.Context, prID string) (e.PullRequest,
 		if errors.Is(err, re.ErrNotFound) {
 			return e.PullRequest{}, se.ErrNotFoundPR
 		}
-		// TODO: везде такое поставить где неизвестная ошибка
-		log.Error(errutils.WrapPathErr(err))
 		return e.PullRequest{}, se.ErrCannotGetPR
 	}
 	return pr, nil
@@ -146,14 +141,12 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 			if errors.Is(err, re.ErrNotFound) {
 				return se.ErrNotFoundPR
 			}
-			log.Error(errutils.WrapPathErr(err))
 			return se.ErrCannotGetPR
 		}
 
 		if len(pr.Reviewers) == 0 {
 			return se.ErrNotFoundReviewers
 		}
-		log.Info(pr.Reviewers)
 		if !slices.Contains(pr.Reviewers, in.RevID) {
 			return se.ErrReviewerNotAssigned
 		}
@@ -193,7 +186,6 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 			if errors.Is(err, re.ErrNotFound) {
 				return se.ErrNotFoundReviewers
 			}
-			log.Error(errutils.WrapPathErr(err))
 			return err
 		}
 
@@ -221,7 +213,6 @@ func (s *PullReqService) GetPRsByReviewer(ctx context.Context, uID string) ([]e.
 
 	prs, err := s.prRepo.GetPRsByReviewer(ctx, uID)
 	if err != nil {
-		log.Error(errutils.WrapPathErr(err))
 		return nil, se.ErrCannotGetPR
 	}
 	return prs, nil

@@ -14,7 +14,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type PullReqRoutes struct {
@@ -50,7 +50,7 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 	})
 
 	if err != nil {
-		logrus.Error(errutils.WrapPathErr(err))
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrPRExists) {
 			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrAlreadyExists.Error())
 		} else if errors.Is(err, se.ErrInactiveCreator) {
@@ -83,7 +83,7 @@ func (r *PullReqRoutes) getPR(c echo.Context) error {
 
 	pr, err := r.prService.GetPR(c.Request().Context(), input.PRID)
 	if err != nil {
-		logrus.Error(errutils.WrapPathErr(err))
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrNotFoundPR) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}
@@ -121,7 +121,7 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 	})
 
 	if err != nil {
-		logrus.Error(errutils.WrapPathErr(err))
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrReviewerNotAssigned) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotAssigned, he.ErrNotFound.Error())
 		} else if errors.Is(err, se.ErrNoAvailableReviewers) {
@@ -157,7 +157,7 @@ func (r *PullReqRoutes) mergePR(c echo.Context) error {
 
 	pr, err := r.prService.MergePR(c.Request().Context(), input.PullReqID)
 	if err != nil {
-		logrus.Error(errutils.WrapPathErr(err))
+		log.Error(errutils.WrapPathErr(err))
 		if errors.Is(err, se.ErrNotFoundPR) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
 		}

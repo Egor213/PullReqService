@@ -7,7 +7,7 @@ import (
 	e "app/internal/entity"
 	"app/internal/repo"
 	re "app/internal/repo/repoerrs"
-	servmappers "app/internal/service/mappers"
+	smap "app/internal/service/mappers"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"
 
@@ -29,7 +29,7 @@ func NewTeamsService(tRepo repo.Teams, uRepo repo.Users, tr *manager.Manager) *T
 }
 
 func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamInput) (e.Team, error) {
-	members := servmappers.TeamMemberDTOToMember(in.Members)
+	members := smap.TeamMemberDTOToMember(in.Members)
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		team, err := s.teamsRepo.GetTeam(ctx, in.TeamName)
 
@@ -43,7 +43,7 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamI
 				return err
 			}
 
-			err := s.usersRepo.UpsertBulk(ctx, servmappers.TeamMemberDTOToUser(in.Members, in.TeamName))
+			err := s.usersRepo.UpsertBulk(ctx, smap.TeamMemberDTOToUser(in.Members, in.TeamName))
 			if err != nil {
 				return err
 			}
@@ -81,7 +81,7 @@ func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in sd.ReplaceMemb
 			return err
 		}
 
-		err = s.usersRepo.UpsertBulk(ctx, servmappers.TeamMemberDTOToUser(in.Members, in.TeamName))
+		err = s.usersRepo.UpsertBulk(ctx, smap.TeamMemberDTOToUser(in.Members, in.TeamName))
 		if err != nil {
 			return err
 		}
