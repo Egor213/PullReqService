@@ -1,6 +1,6 @@
 package httpdto
 
-import "app/internal/controller/http/v1/httperrs"
+import httperrs "app/internal/controller/http/v1/errors"
 
 type APIError struct {
 	Code    httperrs.ErrorCode `json:"code"`

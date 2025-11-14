@@ -1,8 +1,8 @@
 package mw
 
 import (
-	he "app/internal/controller/http/v1/httperrs"
-	ut "app/internal/controller/http/v1/httputils"
+	he "app/internal/controller/http/v1/errors"
+	ut "app/internal/controller/http/v1/utils"
 	e "app/internal/entity"
 	"app/internal/service"
 	errutils "app/pkg/errors"

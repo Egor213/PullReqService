@@ -1,8 +1,8 @@
 package httputils
 
 import (
-	hd "app/internal/controller/http/v1/httpdto"
-	he "app/internal/controller/http/v1/httperrs"
+	hd "app/internal/controller/http/v1/dto"
+	he "app/internal/controller/http/v1/errors"
 
 	"github.com/labstack/echo/v4"
 )

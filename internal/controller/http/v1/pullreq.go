@@ -1,10 +1,10 @@
 package httpapi
 
 import (
-	hd "app/internal/controller/http/v1/httpdto"
-	he "app/internal/controller/http/v1/httperrs"
-	ut "app/internal/controller/http/v1/httputils"
+	hd "app/internal/controller/http/v1/dto"
+	he "app/internal/controller/http/v1/errors"
 	mw "app/internal/controller/http/v1/midlleware"
+	ut "app/internal/controller/http/v1/utils"
 	e "app/internal/entity"
 	"app/internal/service"
 	sd "app/internal/service/servdto"

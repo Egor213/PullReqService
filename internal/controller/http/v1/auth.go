@@ -1,9 +1,9 @@
 package httpapi
 
 import (
-	hd "app/internal/controller/http/v1/httpdto"
-	he "app/internal/controller/http/v1/httperrs"
-	ut "app/internal/controller/http/v1/httputils"
+	hd "app/internal/controller/http/v1/dto"
+	he "app/internal/controller/http/v1/errors"
+	ut "app/internal/controller/http/v1/utils"
 	"app/internal/service"
 	sd "app/internal/service/servdto"
 	se "app/internal/service/serverrs"

@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	hd "app/internal/controller/http/v1/httpdto"
+	hd "app/internal/controller/http/v1/dto"
 	e "app/internal/entity"
 	sd "app/internal/service/servdto"
 )
