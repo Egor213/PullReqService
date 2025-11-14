@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"app/internal/service"
 	"errors"
 	"net/http"
 
@@ -10,7 +11,7 @@ import (
 	mw "app/internal/controller/http/v1/midlleware"
 	ut "app/internal/controller/http/v1/utils"
 	e "app/internal/entity"
-	"app/internal/service"
+
 	se "app/internal/service/errors"
 
 	"github.com/labstack/echo/v4"

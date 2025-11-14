@@ -1,13 +1,13 @@
 package repo
 
 import (
+	"app/internal/repo/pgdb"
+	"app/pkg/postgres"
 	"context"
 	"time"
 
 	e "app/internal/entity"
 	rd "app/internal/repo/dto"
-	"app/internal/repo/pgdb"
-	"app/pkg/postgres"
 )
 
 type Teams interface {

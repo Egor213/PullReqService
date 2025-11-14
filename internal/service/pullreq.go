@@ -146,7 +146,6 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 	var out sd.ReassignReviewerOutput
 	err := s.trManager.DoWithSettings(ctx, trOp, func(ctx context.Context) error {
 		pr, err := s.prRepo.GetPR(ctx, in.PullReqID)
-
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
 			return se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
@@ -188,7 +187,6 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 			NewReviewer: NewRevID,
 			OldReviewer: in.RevID,
 		})
-
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
 			return se.ErrCannotChangeReviewer

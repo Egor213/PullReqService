@@ -51,7 +51,6 @@ func (h *Auth) UserIdentity(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Set(roleKey, claims.Role)
 
 		return next(c)
-
 	}
 }
 

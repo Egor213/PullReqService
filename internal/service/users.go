@@ -1,10 +1,11 @@
 package service
 
 import (
+	"app/internal/repo"
 	"context"
 
 	e "app/internal/entity"
-	"app/internal/repo"
+
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
 	errutils "app/pkg/errors"

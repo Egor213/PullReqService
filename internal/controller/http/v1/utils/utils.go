@@ -9,11 +9,14 @@ import (
 )
 
 func NewErrReasonJSON(c echo.Context, httpCode int, msgCode he.ErrorCode, msg string) error {
-	c.JSON(httpCode, hd.ErrorOutput{
+	err := c.JSON(httpCode, hd.ErrorOutput{
 		Error: hd.APIError{
 			Code:    msgCode,
 			Message: msg,
 		},
 	})
+	if err != nil {
+		return err
+	}
 	return fmt.Errorf("%s: %s", msgCode, msg)
 }

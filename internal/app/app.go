@@ -1,19 +1,20 @@
 package app
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
 	"app/internal/config"
-	httpapi "app/internal/controller/http/v1"
 	"app/internal/repo"
 	"app/internal/service"
-	errutils "app/pkg/errors"
 	"app/pkg/httpserver"
 	"app/pkg/logger"
 	"app/pkg/postgres"
 	"app/pkg/validator"
+	"os"
+	"os/signal"
+	"syscall"
+
+	httpapi "app/internal/controller/http/v1"
+
+	errutils "app/pkg/errors"
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"

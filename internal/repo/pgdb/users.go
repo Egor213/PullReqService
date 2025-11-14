@@ -1,13 +1,13 @@
 package pgdb
 
 import (
+	"app/pkg/postgres"
 	"context"
 	"errors"
 
 	e "app/internal/entity"
 	repoerrs "app/internal/repo/errors"
 	errutils "app/pkg/errors"
-	"app/pkg/postgres"
 
 	sq "github.com/Masterminds/squirrel"
 

@@ -46,16 +46,17 @@ func (r *PullReqRoutes) createPR(c echo.Context) error {
 		NamePR:    input.NamePR,
 		AuthorID:  input.AuthorID,
 	})
-
 	if err != nil {
-		if errors.Is(err, se.ErrPRExists) {
+		switch {
+		case errors.Is(err, se.ErrPRExists):
 			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRExists, he.ErrPRAlreadyExists.Error())
-		} else if errors.Is(err, se.ErrInactiveCreator) {
+		case errors.Is(err, se.ErrInactiveCreator):
 			return ut.NewErrReasonJSON(c, http.StatusForbidden, he.ErrCodeInactiveCreator, err.Error())
-		} else if errors.Is(err, se.ErrNotFoundUser) || errors.Is(err, se.ErrNotFoundTeam) {
+		case errors.Is(err, se.ErrNotFoundUser), errors.Is(err, se.ErrNotFoundTeam):
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
+		default:
+			return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 		}
-		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	return c.JSON(http.StatusCreated, hd.CreatePROutput{
@@ -117,18 +118,19 @@ func (r *PullReqRoutes) reassignReviewer(c echo.Context) error {
 		PullReqID: input.PullReqID,
 		RevID:     input.OldReviewer,
 	})
-
 	if err != nil {
-		if errors.Is(err, se.ErrReviewerNotAssigned) {
+		switch {
+		case errors.Is(err, se.ErrReviewerNotAssigned):
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotAssigned, he.ErrReviewerNotAssign.Error())
-		} else if errors.Is(err, se.ErrNoAvailableReviewers) {
+		case errors.Is(err, se.ErrNoAvailableReviewers):
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNoCandidate, he.ErrNoActiveCandidate.Error())
-		} else if errors.Is(err, se.ErrMergedPR) {
+		case errors.Is(err, se.ErrMergedPR):
 			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRMerged, he.ErrPRMerged.Error())
-		} else if errors.Is(err, se.ErrNotFoundUser) || errors.Is(err, se.ErrNotFoundPR) {
+		case errors.Is(err, se.ErrNotFoundUser), errors.Is(err, se.ErrNotFoundPR):
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
+		default:
+			return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 		}
-		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	return c.JSON(http.StatusOK, hd.ReassignReviewerOutput{

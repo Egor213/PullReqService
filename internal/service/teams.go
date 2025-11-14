@@ -1,11 +1,12 @@
 package service
 
 import (
+	"app/internal/repo"
 	"context"
 	"errors"
 
 	e "app/internal/entity"
-	"app/internal/repo"
+
 	re "app/internal/repo/errors"
 	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
@@ -34,7 +35,6 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamI
 	members := smap.TeamMemberDTOToMember(in.Members)
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		team, err := s.teamsRepo.GetTeam(ctx, in.TeamName)
-
 		if err != nil {
 			log.Error(errutils.WrapPathErr(err))
 			if !errors.Is(err, re.ErrNotFound) {
@@ -71,7 +71,6 @@ func (s *TeamsService) CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamI
 
 		return nil
 	})
-
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
 		return e.Team{}, err

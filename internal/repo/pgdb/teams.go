@@ -1,11 +1,11 @@
 package pgdb
 
 import (
+	"app/pkg/postgres"
 	"context"
 	"errors"
 
 	errutils "app/pkg/errors"
-	"app/pkg/postgres"
 
 	e "app/internal/entity"
 	entitymappers "app/internal/entity/mappers"

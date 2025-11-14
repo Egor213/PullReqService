@@ -39,12 +39,12 @@ func Migrate(pgUrl string) {
 	}
 
 	if err != nil {
-		log.Fatal(errutils.WrapPathErr(err))
+		panic(errutils.WrapPathErr(err))
 	}
 	defer mgrt.Close()
 
 	if err = mgrt.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatal(errutils.WrapPathErr(err))
+		panic(errutils.WrapPathErr(err))
 	}
 
 	if errors.Is(err, migrate.ErrNoChange) {

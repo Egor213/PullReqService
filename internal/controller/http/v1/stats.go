@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"app/internal/service"
 	"net/http"
 
 	hd "app/internal/controller/http/v1/dto"
@@ -8,7 +9,6 @@ import (
 	hmap "app/internal/controller/http/v1/mappers"
 	mw "app/internal/controller/http/v1/midlleware"
 	ut "app/internal/controller/http/v1/utils"
-	"app/internal/service"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,7 +27,6 @@ func newStatsRoutes(g *echo.Group, statsServ service.Stats, m *mw.Auth) {
 
 func (r *StatsRoutes) getStats(c echo.Context) error {
 	stats, err := r.statsService.GetStats(c.Request().Context())
-
 	if err != nil {
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeForbidden, he.ErrInternalServer.Error())
 	}

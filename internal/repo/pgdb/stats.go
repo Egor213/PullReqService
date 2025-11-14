@@ -1,11 +1,11 @@
 package pgdb
 
 import (
+	"app/pkg/postgres"
 	"context"
 
 	rd "app/internal/repo/dto"
 	errutils "app/pkg/errors"
-	"app/pkg/postgres"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -19,7 +19,6 @@ func NewStatsRepo(pg *postgres.Postgres) *StatsRepo {
 }
 
 func (r *StatsRepo) GetReviewerStats(ctx context.Context) ([]rd.ReviewerStatsOutput, error) {
-
 	sql, args, _ := r.Builder.
 		Select("user_id", "COUNT(*) AS assignments").
 		From("pr_reviewers").
@@ -42,7 +41,6 @@ func (r *StatsRepo) GetReviewerStats(ctx context.Context) ([]rd.ReviewerStatsOut
 }
 
 func (r *StatsRepo) GetPRStats(ctx context.Context) ([]rd.PRStatsOutput, error) {
-
 	sql, args, _ := r.Builder.
 		Select("pr_id", "COUNT(*) AS assignments").
 		From("pr_reviewers").

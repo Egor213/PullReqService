@@ -66,7 +66,6 @@ func (s *AuthService) ParseToken(accessToken string) (e.ParsedToken, error) {
 		}
 		return []byte(s.signKey), nil
 	})
-
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
 		if ve, ok := err.(*jwt.ValidationError); ok {

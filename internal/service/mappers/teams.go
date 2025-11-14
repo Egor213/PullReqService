@@ -17,6 +17,7 @@ func TeamMemberDTOToUser(t []servdto.TeamMemberDTO, team string) []e.User {
 	}
 	return u
 }
+
 func TeamMemberDTOToMember(t []servdto.TeamMemberDTO) []e.TeamMember {
 	tm := make([]e.TeamMember, 0, len(t))
 	for _, m := range t {

@@ -41,7 +41,6 @@ func (r *PullReqRepo) CreatePR(ctx context.Context, in rd.CreatePRInput) (e.Pull
 		&pr.CreatedAt,
 		&pr.MergedAt,
 	)
-
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -89,7 +88,6 @@ func (r *PullReqRepo) GetPR(ctx context.Context, prID string) (e.PullRequest, er
 		&pr.MergedAt,
 		&assignedReviewers,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return e.PullRequest{}, re.ErrNotFound
@@ -141,7 +139,6 @@ func (r *PullReqRepo) SetNeedMoreReviewers(ctx context.Context, prID string, val
 
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
 	cmdTag, err := conn.Exec(ctx, sql, args...)
-
 	if err != nil {
 		return errutils.WrapPathErr(err)
 	}
@@ -162,7 +159,6 @@ func (r *PullReqRepo) ChangeReviewer(ctx context.Context, in rd.ChangeReviewerIn
 
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
 	cmdTag, err := conn.Exec(ctx, sql, args...)
-
 	if err != nil {
 		return errutils.WrapPathErr(err)
 	}
