@@ -14,8 +14,14 @@ linters:
     - gosimple
     - misspell
     - gocritic
+    - lll
 
 linters-settings:
+  lll:
+      line-length: 120
+      tab-width: 4
+      ignore-comments: true
+      allow-non-ascii: true
   gofmt:
     rewrite-rules:
       - pattern: 'interface{}'

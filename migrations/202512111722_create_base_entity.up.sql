@@ -32,7 +32,6 @@ CREATE TABLE IF NOT EXISTS public.pr_reviewers (
 
 
 
--- TODO: Попробовать Hash индексы
 CREATE INDEX users_team_idx ON public.users(team_name);
 CREATE INDEX users_team_active_idx ON public.users(team_name, is_active);
 

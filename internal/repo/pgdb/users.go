@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	e "app/internal/entity"
-	repoerrs "app/internal/repo/errors"
+	re "app/internal/repo/errors"
 	errutils "app/pkg/errors"
 
 	sq "github.com/Masterminds/squirrel"
@@ -59,17 +59,23 @@ func (r *UsersRepo) DeleteUsersByTeam(ctx context.Context, teamName string) erro
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		return repoerrs.ErrNoRowsDeleted
+		return re.ErrNoRowsDeleted
 	}
 
 	return nil
 }
 
 func (r *UsersRepo) SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error) {
-	sql, args, _ := r.Builder.
+
+	qb := r.Builder.
 		Update("users").
-		Set("is_active", isActive).
-		Where("user_id = ?", userID).
+		Where("user_id = ?", userID)
+
+	if isActive != nil {
+		qb = qb.Set("is_active", *isActive)
+	}
+
+	sql, args, _ := qb.
 		Suffix("RETURNING user_id, username, team_name, is_active").
 		ToSql()
 
@@ -80,7 +86,7 @@ func (r *UsersRepo) SetIsActive(ctx context.Context, userID string, isActive *bo
 	err := row.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return e.User{}, repoerrs.ErrNotFound
+			return e.User{}, re.ErrNotFound
 		}
 		return e.User{}, errutils.WrapPathErr(err)
 	}
@@ -102,7 +108,7 @@ func (r *UsersRepo) GetUserByID(ctx context.Context, userID string) (e.User, err
 	err := row.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return e.User{}, repoerrs.ErrNotFound
+			return e.User{}, re.ErrNotFound
 		}
 		return e.User{}, errutils.WrapPathErr(err)
 	}

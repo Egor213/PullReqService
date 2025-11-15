@@ -17,6 +17,7 @@ type AssignReviewersInput struct {
 type ReassignReviewerInput struct {
 	PullReqID string
 	RevID     string
+	Force     *bool
 }
 
 type ReassignReviewerOutput struct {

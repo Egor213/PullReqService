@@ -14,6 +14,7 @@ type Teams interface {
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
 	CreateTeam(ctx context.Context, teamName string) (e.Team, error)
 	DeleteUsersFromTeam(ctx context.Context, teamName string) error
+	DeactivateTeamUsers(ctx context.Context, teamName string) error
 }
 
 type Users interface {
@@ -32,6 +33,7 @@ type PullReq interface {
 	ChangeReviewer(ctx context.Context, in rd.ChangeReviewerInput) error
 	GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error)
 	MergePR(ctx context.Context, prID string) (*time.Time, error)
+	DeleteReviewer(ctx context.Context, uID string) error
 }
 
 type Stats interface {

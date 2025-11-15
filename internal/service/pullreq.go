@@ -178,6 +178,15 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 		}
 
 		if len(users) == 0 {
+			if in.Force != nil && *in.Force {
+				err = s.prRepo.DeleteReviewer(ctx, in.RevID)
+				if err != nil {
+					log.Error(errutils.WrapPathErr(err))
+					return se.HandleRepoNotFound(
+						err, se.ErrNotFoundUser, se.ErrCannotDelReviewer,
+					)
+				}
+			}
 			return se.ErrNoAvailableReviewers
 		}
 

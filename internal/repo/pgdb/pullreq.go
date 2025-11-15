@@ -214,3 +214,23 @@ func (r *PullReqRepo) MergePR(ctx context.Context, prID string) (*time.Time, err
 
 	return &mergedAt, nil
 }
+
+func (r *PullReqRepo) DeleteReviewer(ctx context.Context, uID string) error {
+	sql, args, _ := r.Builder.
+		Delete("prs").
+		Where("user_id = ?", uID).
+		ToSql()
+
+	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
+	cmdTag, err := conn.Exec(ctx, sql, args...)
+
+	if err != nil {
+		return errutils.WrapPathErr(err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return re.ErrNoRowsDeleted
+	}
+
+	return nil
+}
