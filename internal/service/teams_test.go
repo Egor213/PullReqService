@@ -243,3 +243,77 @@ func TestTeamsService_ReplaceTeamMembers(t *testing.T) {
 		})
 	}
 }
+
+func TestTeamsService_GetTeam(t *testing.T) {
+	var (
+		ctx      = context.Background()
+		teamName = "teamA"
+	)
+
+	members := []e.TeamMember{
+		{UserID: "u1", Username: "user1"},
+		{UserID: "u2", Username: "user2"},
+	}
+
+	type args struct {
+		teamName string
+	}
+
+	type mockBehavior func(t *repomocks.MockTeams, args args)
+
+	testCases := []struct {
+		name         string
+		args         args
+		mockBehavior mockBehavior
+		wantErr      error
+		want         e.Team
+	}{
+		{
+			name: "OK",
+			args: args{teamName: teamName},
+			mockBehavior: func(t *repomocks.MockTeams, args args) {
+				t.EXPECT().GetTeam(ctx, args.teamName).Return(e.Team{
+					TeamName: args.teamName,
+					Members:  members,
+				}, nil)
+			},
+			want: e.Team{
+				TeamName: teamName,
+				Members:  members,
+			},
+		},
+		{
+			name: "Team not found",
+			args: args{teamName: teamName},
+			mockBehavior: func(t *repomocks.MockTeams, args args) {
+				t.EXPECT().GetTeam(ctx, args.teamName).Return(e.Team{}, repoerrs.ErrNotFound)
+			},
+			wantErr: serverrs.ErrNotFoundTeam,
+		},
+		{
+			name: "Other repo error",
+			args: args{teamName: teamName},
+			mockBehavior: func(t *repomocks.MockTeams, args args) {
+				t.EXPECT().GetTeam(ctx, args.teamName).Return(e.Team{}, errors.New("other error"))
+			},
+			wantErr: serverrs.ErrCannotGetTeam,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			tm := repomocks.NewMockTeams(ctrl)
+
+			tc.mockBehavior(tm, tc.args)
+
+			s := service.NewTeamsService(tm, nil, nil)
+			got, err := s.GetTeam(ctx, tc.args.teamName)
+
+			assert.ErrorIs(t, err, tc.wantErr)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
