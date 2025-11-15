@@ -5,6 +5,7 @@ import (
 	"context"
 
 	sd "app/internal/service/dto"
+	se "app/internal/service/errors"
 	smap "app/internal/service/mappers"
 	errutils "app/pkg/errors"
 
@@ -25,13 +26,13 @@ func (s *StatsService) GetStats(ctx context.Context) (sd.GetStatsOutput, error) 
 	statsPR, err := s.statsRepo.GetPRStats(ctx)
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
-		return sd.GetStatsOutput{}, err
+		return sd.GetStatsOutput{}, se.ErrCannotGetPRStats
 	}
 
 	statsReviewer, err := s.statsRepo.GetReviewerStats(ctx)
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
-		return sd.GetStatsOutput{}, err
+		return sd.GetStatsOutput{}, se.ErrCannotGetReviewerStats
 	}
 	return sd.GetStatsOutput{
 		ByUsers: smap.ToReviewerStats(statsReviewer),

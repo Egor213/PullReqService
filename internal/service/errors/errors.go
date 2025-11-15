@@ -23,6 +23,8 @@ var (
 	ErrCannotCreateTeam         = errors.New("cannot create team")
 	ErrCannotUpsetUsers         = errors.New("cannot update or create users")
 	ErrCannotDelUsersFromTeam   = errors.New("cannot delete users from team")
+	ErrCannotGetReviewerStats   = errors.New("cannot get reviewer stats")
+	ErrCannotGetPRStats         = errors.New("cannot get pr stats")
 
 	ErrPRExists            = errors.New("pull request already exists")
 	ErrTeamWithUsersExists = errors.New("team with such users already exists")
