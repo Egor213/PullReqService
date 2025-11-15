@@ -27,7 +27,7 @@ func ConfigureRouter(handler *echo.Echo, services *service.Services) {
 	authMW := mw.NewAuth(services.Auth)
 
 	handler.Use(middleware.Recover())
-	handler.GET("/ping", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
+	handler.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "ok") })
 
 	newAuthRoutes(handler.Group("/auth"), services.Auth)
 

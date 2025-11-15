@@ -6,10 +6,9 @@ linters:
   enable:
     - gofumpt
     - goimports
-    - unused       # уже ловит неиспользуемые поля
+    - unused
     - govet
     - errcheck
-    # - lll
     - staticcheck
     - ineffassign
     - gosimple
@@ -17,11 +16,16 @@ linters:
     - gocritic
 
 linters-settings:
-  lll:
-    line-length: 120
-    tab-width: 4
-    ignore-comments: true
-    allow-non-ascii: true
+  gofmt:
+    rewrite-rules:
+      - pattern: 'interface{}'
+        replacement: 'any'
 
   gocritic:
     enabled-checks: []
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
