@@ -1,5 +1,6 @@
 #!/bin/sh
 
+
 mockgen -source=internal/repo/repo.go \
         -destination=internal/mocks/repomock/repomocks.go \
         -package=repomocks

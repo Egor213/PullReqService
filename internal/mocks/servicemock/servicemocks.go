@@ -10,8 +10,60 @@ import (
 	context "context"
 	reflect "reflect"
 
+	trm "github.com/avito-tech/go-transaction-manager/trm/v2"
 	gomock "github.com/golang/mock/gomock"
 )
+
+// MockTRManager is a mock of TRManager interface.
+type MockTRManager struct {
+	ctrl     *gomock.Controller
+	recorder *MockTRManagerMockRecorder
+}
+
+// MockTRManagerMockRecorder is the mock recorder for MockTRManager.
+type MockTRManagerMockRecorder struct {
+	mock *MockTRManager
+}
+
+// NewMockTRManager creates a new mock instance.
+func NewMockTRManager(ctrl *gomock.Controller) *MockTRManager {
+	mock := &MockTRManager{ctrl: ctrl}
+	mock.recorder = &MockTRManagerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTRManager) EXPECT() *MockTRManagerMockRecorder {
+	return m.recorder
+}
+
+// Do mocks base method.
+func (m *MockTRManager) Do(ctx context.Context, fn func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Do", ctx, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Do indicates an expected call of Do.
+func (mr *MockTRManagerMockRecorder) Do(ctx, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockTRManager)(nil).Do), ctx, fn)
+}
+
+// DoWithSettings mocks base method.
+func (m *MockTRManager) DoWithSettings(ctx context.Context, s trm.Settings, fn func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DoWithSettings", ctx, s, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DoWithSettings indicates an expected call of DoWithSettings.
+func (mr *MockTRManagerMockRecorder) DoWithSettings(ctx, s, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoWithSettings", reflect.TypeOf((*MockTRManager)(nil).DoWithSettings), ctx, s, fn)
+}
 
 // MockTeams is a mock of Teams interface.
 type MockTeams struct {

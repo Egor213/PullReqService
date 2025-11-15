@@ -13,17 +13,16 @@ import (
 	smap "app/internal/service/mappers"
 	errutils "app/pkg/errors"
 
-	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	log "github.com/sirupsen/logrus"
 )
 
 type TeamsService struct {
 	teamsRepo repo.Teams
 	usersRepo repo.Users
-	trManager *manager.Manager
+	trManager TRManager
 }
 
-func NewTeamsService(tRepo repo.Teams, uRepo repo.Users, tr *manager.Manager) *TeamsService {
+func NewTeamsService(tRepo repo.Teams, uRepo repo.Users, tr TRManager) *TeamsService {
 	return &TeamsService{
 		usersRepo: uRepo,
 		teamsRepo: tRepo,

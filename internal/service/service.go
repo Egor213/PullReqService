@@ -9,8 +9,13 @@ import (
 
 	sd "app/internal/service/dto"
 
-	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 )
+
+type TRManager interface {
+	Do(ctx context.Context, fn func(ctx context.Context) error) error
+	DoWithSettings(ctx context.Context, s trm.Settings, fn func(ctx context.Context) error) (err error)
+}
 
 type Teams interface {
 	CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamInput) (e.Team, error)
@@ -50,7 +55,7 @@ type Services struct {
 
 type ServicesDependencies struct {
 	Repos     *repo.Repositories
-	TrManager *manager.Manager
+	TrManager TRManager
 
 	SignKey  string
 	TokenTTL time.Duration

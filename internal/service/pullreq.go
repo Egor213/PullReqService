@@ -14,7 +14,6 @@ import (
 	"slices"
 
 	"github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
-	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/settings"
 	"github.com/jackc/pgx/v5"
 	log "github.com/sirupsen/logrus"
@@ -23,10 +22,10 @@ import (
 type PullReqService struct {
 	prRepo    repo.PullReq
 	usersRepo repo.Users
-	trManager *manager.Manager
+	trManager TRManager
 }
 
-func NewPullReqService(prRepo repo.PullReq, uRepo repo.Users, tr *manager.Manager) *PullReqService {
+func NewPullReqService(prRepo repo.PullReq, uRepo repo.Users, tr TRManager) *PullReqService {
 	return &PullReqService{
 		prRepo:    prRepo,
 		usersRepo: uRepo,
@@ -114,10 +113,11 @@ func (s *PullReqService) AssignReviewers(ctx context.Context, in sd.AssignReview
 			return se.ErrCannotAssignReviewers
 		}
 
-		needMore := count < reviewersCount
-		if err := s.prRepo.SetNeedMoreReviewers(ctx, in.PullReqID, needMore); err != nil {
-			log.Error(errutils.WrapPathErr(err))
-			return se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotChangeSetNeedMoRev)
+		if count < reviewersCount {
+			if err := s.prRepo.SetNeedMoreReviewers(ctx, in.PullReqID, true); err != nil {
+				log.Error(errutils.WrapPathErr(err))
+				return se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotChangeSetNeedMoRev)
+			}
 		}
 
 		return nil
