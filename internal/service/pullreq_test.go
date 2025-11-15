@@ -34,8 +34,7 @@ func TestPullReqService_CreatePR(t *testing.T) {
 	}
 
 	type args struct {
-		ctx context.Context
-		in  rd.CreatePRInput
+		in rd.CreatePRInput
 	}
 
 	type MockBehavior func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args)
@@ -57,11 +56,10 @@ func TestPullReqService_CreatePR(t *testing.T) {
 		{
 			name: "OK",
 			args: args{
-				ctx: ctx,
-				in:  defPR,
+				in: defPR,
 			},
 			mockBehavior: func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args) {
-				u.EXPECT().GetUserByID(ctx, args.in.AuthorID).Return(user, nil)
+				u.EXPECT().GetUserByID(ctx, authorID).Return(user, nil)
 				p.EXPECT().CreatePR(ctx, args.in).Return(e.PullRequest{
 					PullReqID: prID,
 					NamePR:    prID,
@@ -82,11 +80,10 @@ func TestPullReqService_CreatePR(t *testing.T) {
 		{
 			name: "PR already exists",
 			args: args{
-				ctx: ctx,
-				in:  defPR,
+				in: defPR,
 			},
 			mockBehavior: func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args) {
-				u.EXPECT().GetUserByID(ctx, args.in.AuthorID).Return(user, nil)
+				u.EXPECT().GetUserByID(ctx, authorID).Return(user, nil)
 				p.EXPECT().CreatePR(ctx, args.in).Return(e.PullRequest{}, repoerrs.ErrAlreadyExists)
 			},
 			wantErr: serverrs.ErrPRExists,
@@ -94,11 +91,10 @@ func TestPullReqService_CreatePR(t *testing.T) {
 		{
 			name: "PR cannot create",
 			args: args{
-				ctx: ctx,
-				in:  defPR,
+				in: defPR,
 			},
 			mockBehavior: func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args) {
-				u.EXPECT().GetUserByID(ctx, args.in.AuthorID).Return(user, nil)
+				u.EXPECT().GetUserByID(ctx, authorID).Return(user, nil)
 				p.EXPECT().CreatePR(ctx, args.in).Return(e.PullRequest{}, errors.New("other error"))
 			},
 			wantErr: serverrs.ErrCannotCreatePR,
@@ -109,7 +105,7 @@ func TestPullReqService_CreatePR(t *testing.T) {
 				in: defPR,
 			},
 			mockBehavior: func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args) {
-				u.EXPECT().GetUserByID(ctx, args.in.AuthorID).Return(e.User{}, repoerrs.ErrNotFound)
+				u.EXPECT().GetUserByID(ctx, authorID).Return(e.User{}, repoerrs.ErrNotFound)
 			},
 			wantErr: serverrs.ErrNotFoundUser,
 		},
@@ -119,7 +115,7 @@ func TestPullReqService_CreatePR(t *testing.T) {
 				in: defPR,
 			},
 			mockBehavior: func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args) {
-				u.EXPECT().GetUserByID(ctx, args.in.AuthorID).Return(e.User{}, repoerrs.ErrNotFound)
+				u.EXPECT().GetUserByID(ctx, authorID).Return(e.User{}, repoerrs.ErrNotFound)
 			},
 			wantErr: serverrs.ErrNotFoundUser,
 		},
@@ -129,7 +125,7 @@ func TestPullReqService_CreatePR(t *testing.T) {
 				in: defPR,
 			},
 			mockBehavior: func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args) {
-				u.EXPECT().GetUserByID(ctx, user.UserID).Return(e.User{
+				u.EXPECT().GetUserByID(ctx, authorID).Return(e.User{
 					IsActive: &isActiveFalse,
 					UserID:   user.UserID,
 					Username: user.Username,
@@ -144,7 +140,7 @@ func TestPullReqService_CreatePR(t *testing.T) {
 				in: defPR,
 			},
 			mockBehavior: func(u *repomocks.MockUsers, p *repomocks.MockPullReq, args args) {
-				u.EXPECT().GetUserByID(ctx, user.UserID).Return(e.User{
+				u.EXPECT().GetUserByID(ctx, authorID).Return(e.User{
 					IsActive: user.IsActive,
 					UserID:   user.UserID,
 					Username: user.Username,
