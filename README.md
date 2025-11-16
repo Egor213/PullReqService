@@ -1,8 +1,11 @@
 # Начало работы
 
-1. Копируем репозиторий:
+1. Копируем репозиторий и переходим в него:
 ```sh
-https://github.com/Egor213/Avito-task.git
+git clone https://github.com/Egor213/PullReqService.git
+```
+```sh
+св PullReqService
 ```
 
 2. Создаем в нем файл `.env` и копируем содержимое файла `.env.example`. Затем выставляем необходимые на ваш вкус настройки.
