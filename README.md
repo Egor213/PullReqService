@@ -5,7 +5,7 @@
 git clone https://github.com/Egor213/PullReqService.git
 ```
 ```sh
-св PullReqService
+cd PullReqService
 ```
 
 2. Создаем в нем файл `.env` и копируем содержимое файла `.env.example`. Затем выставляем необходимые на ваш вкус настройки.
