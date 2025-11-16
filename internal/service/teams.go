@@ -85,7 +85,7 @@ func (s *TeamsService) ReplaceTeamMembers(ctx context.Context, in sd.ReplaceMemb
 	return s.trManager.Do(ctx, func(ctx context.Context) error {
 		err := s.teamsRepo.DeleteUsersFromTeam(ctx, in.TeamName)
 
-		if err != nil && !errors.Is(err, re.ErrNoRowsDeleted) {
+		if err != nil && !errors.Is(err, re.ErrNotFound) {
 			log.Error(errutils.WrapPathErr(err))
 			return se.ErrCannotDelUsersFromTeam
 		}

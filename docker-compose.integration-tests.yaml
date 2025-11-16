@@ -11,7 +11,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+      test: ["CMD-SHELL", "pg_isready -U test -d testdb"]
       interval: 3s
       timeout: 5s
       retries: 5
@@ -30,6 +30,7 @@ services:
       - TEST_RUN=true
     volumes:
       - ./logs:/logs
+      - ./fixtures:/fixtures
     ports:
       - "8080:8080"
     networks:

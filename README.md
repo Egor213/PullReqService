@@ -47,6 +47,11 @@ golangci-lint run
 ```sh
 docker compose -f docker-compose.integration-tests.yaml up --build
 ```
+Или
+```sh
+docker compose -f docker-compose.integration-tests.yaml up --build --abort-on-container-exit --exit-code-from app_test
+```
+
 
 # Стек
 

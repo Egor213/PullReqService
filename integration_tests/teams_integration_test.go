@@ -8,55 +8,80 @@ import (
 	. "github.com/Eun/go-hit"
 )
 
-const (
-	host     = "app:8080"
-	basePath = "http://" + host + "/api/v1"
-)
+func TestCreateTeam_CreateUpdate(t *testing.T) {
 
-func TestCreateTeam(t *testing.T) {
+	baseTeam := map[string]any{
+		"team_name": "backend_test_case",
+		"members": []map[string]any{
+			{"user_id": "u1000", "username": "Alice", "is_active": true},
+			{"user_id": "u1001", "username": "Bob", "is_active": true},
+		},
+	}
+
+	changedTeam := map[string]any{
+		"team_name": baseTeam["team_name"],
+		"members": []map[string]any{
+			{"user_id": "u1000", "username": "Alice", "is_active": true},
+			{"user_id": "u1002", "username": "Bob", "is_active": true},
+		},
+	}
+
 	testCases := []struct {
-		description      string
-		teamName         string
-		body             map[string]any
-		expectedStatus   IStep
-		expectedResponse IStep
+		description string
+		statusCode  int
+		body        map[string]any
 	}{
 		{
 			description: "Create team successfully",
-			teamName:    "backend",
-			body: map[string]any{
-				"team_name": "backend",
-				"members": []map[string]any{
-					{
-						"user_id":   "u1",
-						"username":  "Alice",
-						"is_active": true,
-					},
-					{
-						"user_id":   "u2",
-						"username":  "Bob",
-						"is_active": true,
-					},
-				},
-			},
-			expectedStatus:   Expect().Status().Equal(http.StatusCreated),
-			expectedResponse: Expect().Body().JSON().JQ(".team.team_name").Equal("backend"),
+			statusCode:  http.StatusCreated,
+			body:        baseTeam,
+		},
+		{
+			description: "Update users the team",
+			statusCode:  http.StatusCreated,
+			body:        changedTeam,
 		},
 	}
 
 	for _, tc := range testCases {
+		expectedResponse := map[string]any{
+			"team": tc.body,
+		}
 		Test(t,
 			Description(tc.description),
-			Post(basePath+"/team/add"),
+			Post(BasePath+"/team/add"),
 			Send().Headers("Content-Type").Add("application/json"),
 			Send().Body().JSON(tc.body),
-			tc.expectedStatus,
-			tc.expectedResponse,
+			Expect().Status().Equal(int64(tc.statusCode)),
+			Expect().Body().JSON().Equal(expectedResponse),
 		)
 	}
 }
 
-func TestGetTeam(t *testing.T) {
+func TestCreateTeam_EmptyMembers(t *testing.T) {
+
+	baseTeam := map[string]any{
+		"team_name": "backend_test_case",
+		"members":   []map[string]any{},
+	}
+	err := map[string]any{
+		"error": map[string]any{
+			"code":    "INVALID_REQUEST_PARAMETERS",
+			"message": "field Members must be at least 1 characters",
+		},
+	}
+	Test(t,
+		Description("Create team empty members"),
+		Post(BasePath+"/team/add"),
+		Send().Headers("Content-Type").Add("application/json"),
+		Send().Body().JSON(baseTeam),
+		Expect().Status().Equal(int64(http.StatusBadRequest)),
+		Expect().Body().JSON().Equal(err),
+	)
+}
+
+func TestGetTeam_BaseErrors(t *testing.T) {
+
 	testCases := []struct {
 		description      string
 		teamName         string
@@ -64,13 +89,6 @@ func TestGetTeam(t *testing.T) {
 		expectedStatus   IStep
 		expectedResponse IStep
 	}{
-		{
-			description:      "Get existing team",
-			teamName:         "backend",
-			withAuth:         true,
-			expectedStatus:   Expect().Status().Equal(http.StatusOK),
-			expectedResponse: Expect().Body().JSON().JQ(".team_name").Equal("backend"),
-		},
 		{
 			description:      "Get non-existing team",
 			teamName:         "nonexistent",
@@ -87,7 +105,7 @@ func TestGetTeam(t *testing.T) {
 		},
 	}
 
-	testToken, _ := getAuthToken("u1", string(entity.RoleAdmin), "http://"+host)
+	testToken, _ := getAuthToken("u1", string(entity.RoleAdmin), "http://"+Host)
 
 	for _, tc := range testCases {
 		authToken := "none"
@@ -97,10 +115,29 @@ func TestGetTeam(t *testing.T) {
 		authHeader := Send().Headers("Authorization").Add("Bearer " + authToken)
 		Test(t,
 			Description(tc.description),
-			Get(basePath+"/team/get?team_name="+tc.teamName),
+			Get(BasePath+"/team/get?team_name="+tc.teamName),
 			authHeader,
 			tc.expectedStatus,
 			tc.expectedResponse,
 		)
 	}
+}
+
+func TestGetTeam_OK(t *testing.T) {
+	testToken, _ := getAuthToken("u1", string(entity.RoleAdmin), "http://"+Host)
+	authHeader := Send().Headers("Authorization").Add("Bearer " + testToken)
+	team := map[string]any{
+		"team_name": "getTeamTest",
+		"members": []map[string]any{
+			{"user_id": "getTeamTest1", "username": "getTeamTest1", "is_active": true},
+			{"user_id": "getTeamTest2", "username": "getTeamTest2", "is_active": false},
+		},
+	}
+	Test(t,
+		Description("OK get team"),
+		Get(BasePath+"/team/get?team_name="+"getTeamTest"),
+		authHeader,
+		Expect().Status().Equal(http.StatusOK),
+		Expect().Body().JSON().Equal(team),
+	)
 }

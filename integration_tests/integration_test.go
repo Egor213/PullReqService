@@ -6,6 +6,11 @@ import (
 	. "github.com/Eun/go-hit"
 )
 
+var (
+	Host     = "app:8080"
+	BasePath = "http://" + Host + "/api/v1"
+)
+
 func getAuthToken(username, role, url string) (string, error) {
 	var token string
 	var err error

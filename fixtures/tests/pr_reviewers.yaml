@@ -1,8 +1,21 @@
 - pr_id: pr-1
   user_id: u1
-- pr_id: pr-1
-  user_id: u5
-- pr_id: pr-2
-  user_id: u10
-- pr_id: pr-2
-  user_id: u9
+
+- pr_id: TestGetReviewPR1
+  user_id: TestGetReview
+
+- pr_id: TestGetReviewPR2
+  user_id: TestGetReview
+
+
+- pr_id: TestReassignPR1
+  user_id: TestReassignUser2
+
+- pr_id: TestReassignPR1
+  user_id: TestReassignUser3
+
+- pr_id: TestReassignPR2
+  user_id: TestReassignUser2
+
+- pr_id: TestReassignPR2
+  user_id: TestReassignUser3
