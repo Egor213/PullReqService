@@ -4,6 +4,7 @@ import (
 	"app/internal/config"
 	"app/internal/repo"
 	"app/internal/service"
+	"app/internal/usecase"
 	"app/pkg/httpserver"
 	"app/pkg/logger"
 	"app/pkg/postgres"
@@ -60,12 +61,18 @@ func Run() {
 	}
 	services := service.NewServices(deps)
 
+	// UseCases
+	depsUC := usecase.UseCasesDependencies{
+		Servs: services,
+	}
+	usecases := usecase.NewUseCases(depsUC)
+
 	// Echo handler
 	log.Info("Initializing handlers and routes")
 	handler := echo.New()
 
 	handler.Validator = validator.NewCustomValidator()
-	httpapi.ConfigureRouter(handler, services)
+	httpapi.ConfigureRouter(handler, services, usecases)
 
 	// HTTP server
 	log.Info("Starting http server")

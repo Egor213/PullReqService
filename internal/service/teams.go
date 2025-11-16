@@ -109,3 +109,12 @@ func (s *TeamsService) GetTeam(ctx context.Context, teamName string) (e.Team, er
 
 	return team, nil
 }
+
+func (s *TeamsService) DeactivateTeamUsers(ctx context.Context, teamName string) ([]string, error) {
+	users, err := s.teamsRepo.DeactivateTeamUsers(ctx, teamName)
+	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
+		return nil, se.ErrCannotDeactivateTeam
+	}
+	return users, nil
+}

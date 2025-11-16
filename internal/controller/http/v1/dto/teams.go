@@ -20,6 +20,14 @@ type GetTeamInput struct {
 }
 
 type GetTeamOutput struct {
-	TeamName string         `json:"team_name"`
-	Members  []AddTeamInput `json:"members"`
+	TeamName string            `json:"team_name"`
+	Members  []TeamMemberInput `json:"members"`
+}
+
+type DeactivateTeamInput struct {
+	TeamName string `json:"team_name" validate:"required,max=100"`
+}
+
+type DeactivateTeamOutput struct {
+	TeamName string `json:"team_name"`
 }

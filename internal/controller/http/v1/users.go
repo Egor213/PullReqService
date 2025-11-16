@@ -2,6 +2,8 @@ package httpapi
 
 import (
 	"app/internal/service"
+	"app/internal/usecase"
+	ucd "app/internal/usecase/dto"
 	"errors"
 	"net/http"
 
@@ -12,7 +14,6 @@ import (
 	ut "app/internal/controller/http/v1/utils"
 	e "app/internal/entity"
 
-	sd "app/internal/service/dto"
 	se "app/internal/service/errors"
 
 	"github.com/labstack/echo/v4"
@@ -21,12 +22,14 @@ import (
 type UsersRoutes struct {
 	uService  service.Users
 	prService service.PullReq
+	usPRUC    usecase.UsersPRUseCase
 }
 
-func newUsersRoutes(g *echo.Group, uServ service.Users, prServ service.PullReq, m *mw.Auth) {
+func newUsersRoutes(g *echo.Group, uServ service.Users, prServ service.PullReq, uc usecase.UsersPRUseCase, m *mw.Auth) {
 	r := &UsersRoutes{
 		uService:  uServ,
 		prService: prServ,
+		usPRUC:    uc,
 	}
 
 	g.GET("/getReview", r.getReview, m.UserIdentity, m.CheckRole(e.RoleUser))
@@ -43,19 +46,27 @@ func (r *UsersRoutes) setIsActive(c echo.Context) error {
 		return ut.NewErrReasonJSON(c, http.StatusBadRequest, he.ErrCodeInvalidParams, err.Error())
 	}
 
-	user, err := r.uService.SetIsActive(c.Request().Context(), sd.SetIsActiveInput{
+	user, err := r.usPRUC.SetIsActiveAndReassignPRs(c.Request().Context(), ucd.ActiveAndReassugnInput{
 		UserID:   input.UserID,
 		IsActive: input.IsActive,
 	})
+
 	if err != nil {
 		if errors.Is(err, se.ErrNotFoundUser) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())
+		} else if errors.Is(err, se.ErrMergedPR) {
+			return ut.NewErrReasonJSON(c, http.StatusConflict, he.ErrCodePRMerged, he.ErrPRMerged.Error())
 		}
 		return ut.NewErrReasonJSON(c, http.StatusInternalServerError, he.ErrCodeInternalServer, he.ErrInternalServer.Error())
 	}
 
 	return c.JSON(http.StatusOK, hd.SetIsActiveOutput{
-		User: user,
+		User: hd.UserDTO{
+			UserID:   user.UserID,
+			Username: user.Username,
+			TeamName: user.TeamName,
+			IsActive: user.IsActive,
+		},
 	})
 }
 

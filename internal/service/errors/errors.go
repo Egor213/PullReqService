@@ -26,6 +26,7 @@ var (
 	ErrCannotGetReviewerStats   = errors.New("cannot get reviewer stats")
 	ErrCannotGetPRStats         = errors.New("cannot get pr stats")
 	ErrCannotDelReviewer        = errors.New("cannot delete reviewer")
+	ErrCannotDeactivateTeam     = errors.New("cannot deactivate users team")
 
 	ErrPRExists            = errors.New("pull request already exists")
 	ErrTeamWithUsersExists = errors.New("team with such users already exists")

@@ -108,23 +108,28 @@ func (r *TeamsRepo) DeleteUsersFromTeam(ctx context.Context, teamName string) er
 	return nil
 }
 
-func (r *TeamsRepo) DeactivateTeamUsers(ctx context.Context, teamName string) error {
+func (r *TeamsRepo) DeactivateTeamUsers(ctx context.Context, teamName string) ([]string, error) {
 	sql, args, _ := r.Builder.
 		Update("users").
 		Set("is_active", false).
 		Where("team_name = ?", teamName).
+		Suffix("RETURNING user_id").
 		ToSql()
 
-	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
-	cmdTag, err := conn.Exec(ctx, sql, args...)
+	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return errutils.WrapPathErr(err)
+		return nil, err
 	}
+	defer rows.Close()
 
-	if cmdTag.RowsAffected() == 0 {
-		return repoerrs.ErrNotFound
+	var users []string
+	for rows.Next() {
+		var u string
+		if err := rows.Scan(&u); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
 	}
-
-	return nil
+	return users, nil
 
 }

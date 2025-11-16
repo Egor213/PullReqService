@@ -215,10 +215,10 @@ func (r *PullReqRepo) MergePR(ctx context.Context, prID string) (*time.Time, err
 	return &mergedAt, nil
 }
 
-func (r *PullReqRepo) DeleteReviewer(ctx context.Context, uID string) error {
+func (r *PullReqRepo) DeleteReviewer(ctx context.Context, uID string, prID string) error {
 	sql, args, _ := r.Builder.
-		Delete("prs").
-		Where("user_id = ?", uID).
+		Delete("pr_reviewers").
+		Where("user_id = ? AND pr_id = ?", uID, prID).
 		ToSql()
 
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)

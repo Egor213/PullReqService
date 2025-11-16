@@ -179,13 +179,14 @@ func (s *PullReqService) ReassignReviewer(ctx context.Context, in sd.ReassignRev
 
 		if len(users) == 0 {
 			if in.Force != nil && *in.Force {
-				err = s.prRepo.DeleteReviewer(ctx, in.RevID)
+				err = s.prRepo.DeleteReviewer(ctx, in.RevID, in.PullReqID)
 				if err != nil {
 					log.Error(errutils.WrapPathErr(err))
 					return se.HandleRepoNotFound(
 						err, se.ErrNotFoundUser, se.ErrCannotDelReviewer,
 					)
 				}
+				return nil
 			}
 			return se.ErrNoAvailableReviewers
 		}
@@ -256,4 +257,24 @@ func (s *PullReqService) MergePR(ctx context.Context, prID string) (e.PullReques
 	}
 
 	return pr, nil
+}
+
+func (s *PullReqService) DeleteReviewer(ctx context.Context, uID string, prID string) error {
+	pr, err := s.prRepo.GetPR(ctx, prID)
+	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
+		return se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotGetPR)
+	}
+	if pr.Status == e.StatusMerged {
+		return se.ErrMergedPR
+	}
+
+	err = s.prRepo.DeleteReviewer(ctx, uID, prID)
+	if err != nil {
+		log.Error(errutils.WrapPathErr(err))
+		return se.HandleRepoNotFound(
+			err, se.ErrNotFoundUser, se.ErrCannotDelReviewer,
+		)
+	}
+	return nil
 }

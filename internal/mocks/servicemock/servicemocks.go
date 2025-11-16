@@ -103,6 +103,21 @@ func (mr *MockTeamsMockRecorder) CreateOrUpdateTeam(ctx, in interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateTeam", reflect.TypeOf((*MockTeams)(nil).CreateOrUpdateTeam), ctx, in)
 }
 
+// DeactivateTeamUsers mocks base method.
+func (m *MockTeams) DeactivateTeamUsers(ctx context.Context, teamName string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeactivateTeamUsers", ctx, teamName)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeactivateTeamUsers indicates an expected call of DeactivateTeamUsers.
+func (mr *MockTeamsMockRecorder) DeactivateTeamUsers(ctx, teamName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeactivateTeamUsers", reflect.TypeOf((*MockTeams)(nil).DeactivateTeamUsers), ctx, teamName)
+}
+
 // GetTeam mocks base method.
 func (m *MockTeams) GetTeam(ctx context.Context, teamName string) (entity.Team, error) {
 	m.ctrl.T.Helper()
@@ -221,6 +236,20 @@ func (m *MockPullReq) CreatePR(ctx context.Context, in servdto.CreatePRInput) (e
 func (mr *MockPullReqMockRecorder) CreatePR(ctx, in interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePR", reflect.TypeOf((*MockPullReq)(nil).CreatePR), ctx, in)
+}
+
+// DeleteReviewer mocks base method.
+func (m *MockPullReq) DeleteReviewer(ctx context.Context, uID, prID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteReviewer", ctx, uID, prID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteReviewer indicates an expected call of DeleteReviewer.
+func (mr *MockPullReqMockRecorder) DeleteReviewer(ctx, uID, prID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReviewer", reflect.TypeOf((*MockPullReq)(nil).DeleteReviewer), ctx, uID, prID)
 }
 
 // GetPR mocks base method.

@@ -29,6 +29,5 @@ func (s *UsersService) SetIsActive(ctx context.Context, in sd.SetIsActiveInput) 
 		log.Error(errutils.WrapPathErr(err))
 		return e.User{}, se.HandleRepoNotFound(err, se.ErrNotFoundUser, se.ErrCannotSetParam)
 	}
-
 	return user, nil
 }

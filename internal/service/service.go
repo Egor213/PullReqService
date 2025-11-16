@@ -21,6 +21,7 @@ type Teams interface {
 	CreateOrUpdateTeam(ctx context.Context, in sd.CrOrUpTeamInput) (e.Team, error)
 	ReplaceTeamMembers(ctx context.Context, in sd.ReplaceMembersInput) error
 	GetTeam(ctx context.Context, teamName string) (e.Team, error)
+	DeactivateTeamUsers(ctx context.Context, teamName string) ([]string, error)
 }
 
 type Users interface {
@@ -34,6 +35,7 @@ type PullReq interface {
 	ReassignReviewer(ctx context.Context, in sd.ReassignReviewerInput) (sd.ReassignReviewerOutput, error)
 	GetPRsByReviewer(ctx context.Context, uID string) ([]e.PullRequestShort, error)
 	MergePR(ctx context.Context, prID string) (e.PullRequest, error)
+	DeleteReviewer(ctx context.Context, uID string, prID string) error
 }
 
 type Auth interface {

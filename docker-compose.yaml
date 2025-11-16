@@ -3,6 +3,22 @@ version: "3.8"
 name: go_app
 
 services:
+  # app:
+  #   build: .
+  #   environment:
+  #     CONFIG_PATH: config/config.yaml
+  #     PG_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - postgres
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./logs:/logs
+  #   networks:
+  #     - net
+
   psql:
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
@@ -17,6 +33,8 @@ services:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     restart: unless-stopped
     container_name: psql
+    networks:
+      - net
 
   pgadmin:
     image: dpage/pgadmin4
@@ -29,7 +47,24 @@ services:
       - "80:80"
     depends_on:
       - psql
+    networks:
+      - net
+  
+  integration:
+    build:
+      context: .
+      dockerfile: integration-test/Dockerfile
+    # depends_on:
+    #   - app
+    profiles:
+      - tests
+    networks:
+      - net
 
 volumes:
   pg-data:
     driver: local
+
+networks:
+  net:
+    driver: bridge

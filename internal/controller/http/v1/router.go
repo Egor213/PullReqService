@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"app/internal/service"
+	"app/internal/usecase"
 	"io"
 	"log"
 	"net/http"
@@ -16,7 +17,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func ConfigureRouter(handler *echo.Echo, services *service.Services) {
+func ConfigureRouter(handler *echo.Echo, services *service.Services, uc *usecase.UseCases) {
 	logFile := setLogsFile()
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
 
@@ -33,8 +34,8 @@ func ConfigureRouter(handler *echo.Echo, services *service.Services) {
 
 	api := handler.Group("/api/v1")
 	{
-		newTeamsRoutes(api.Group("/team"), services.Teams, authMW)
-		newUsersRoutes(api.Group("/users"), services.Users, services.PullReq, authMW)
+		newTeamsRoutes(api.Group("/team"), services.Teams, uc.TeamsPRUseCase, authMW)
+		newUsersRoutes(api.Group("/users"), services.Users, services.PullReq, uc.UsersPRUseCase, authMW)
 		newPullReqRoutes(api.Group("/pullRequest"), services.PullReq, authMW)
 		newStatsRoutes(api.Group("/stats"), services.Stats, authMW)
 	}
