@@ -6,7 +6,7 @@ export let successRate = new Rate("successful_requests");
 
 export let options = {
     vus: 200,
-    duration: '10s',
+    duration: '60s',
 };
 
 const teams = [
