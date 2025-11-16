@@ -276,5 +276,11 @@ func (s *PullReqService) DeleteReviewer(ctx context.Context, uID string, prID st
 			err, se.ErrNotFoundUser, se.ErrCannotDelReviewer,
 		)
 	}
+	if len(pr.Reviewers) == 1 {
+		if err := s.prRepo.SetNeedMoreReviewers(ctx, prID, true); err != nil {
+			log.Error(errutils.WrapPathErr(err))
+			return se.HandleRepoNotFound(err, se.ErrNotFoundPR, se.ErrCannotChangeSetNeedMoRev)
+		}
+	}
 	return nil
 }
