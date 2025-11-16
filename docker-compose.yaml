@@ -1,24 +1,6 @@
-version: "3.8"
-
 name: go_app
 
 services:
-  # app:
-  #   build: .
-  #   environment:
-  #     CONFIG_PATH: config/config.yaml
-  #     PG_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - postgres
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - ./logs:/logs
-  #   networks:
-  #     - net
-
   psql:
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
@@ -35,27 +17,29 @@ services:
     container_name: psql
     networks:
       - net
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    restart: always
+  
+  app:
+    build: .
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "80:80"
+      CONFIG_PATH: config/config.yaml
+      PG_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+    env_file:
+      - .env
     depends_on:
       - psql
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/logs
     networks:
       - net
   
   integration:
     build:
       context: .
-      dockerfile: integration-test/Dockerfile
-    # depends_on:
-    #   - app
+      dockerfile: integration_tests/Dockerfile
+    depends_on:
+      - app
     profiles:
       - tests
     networks:

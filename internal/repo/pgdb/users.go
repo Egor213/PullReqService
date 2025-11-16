@@ -66,7 +66,6 @@ func (r *UsersRepo) DeleteUsersByTeam(ctx context.Context, teamName string) erro
 }
 
 func (r *UsersRepo) SetIsActive(ctx context.Context, userID string, isActive *bool) (e.User, error) {
-
 	qb := r.Builder.
 		Update("users").
 		Where("user_id = ?", userID)

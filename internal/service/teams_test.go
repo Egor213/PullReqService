@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"app/internal/service"
 	"context"
 	"errors"
 	"testing"
@@ -8,7 +9,7 @@ import (
 	e "app/internal/entity"
 	repomocks "app/internal/mocks/repomock"
 	repoerrs "app/internal/repo/errors"
-	"app/internal/service"
+
 	sd "app/internal/service/dto"
 	serverrs "app/internal/service/errors"
 
@@ -212,7 +213,6 @@ func TestTeamsService_ReplaceTeamMembers(t *testing.T) {
 			mockBehavior: func(t *repomocks.MockTeams, u *repomocks.MockUsers, args args) {
 				t.EXPECT().DeleteUsersFromTeam(ctx, teamName).Return(nil)
 				u.EXPECT().UpsetBulk(ctx, gomock.AssignableToTypeOf([]e.User{})).Return(errors.New("other error"))
-
 			},
 			wantErr: serverrs.ErrCannotUpsetUsers,
 		},

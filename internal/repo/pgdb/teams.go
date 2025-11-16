@@ -131,5 +131,4 @@ func (r *TeamsRepo) DeactivateTeamUsers(ctx context.Context, teamName string) ([
 		users = append(users, u)
 	}
 	return users, nil
-
 }

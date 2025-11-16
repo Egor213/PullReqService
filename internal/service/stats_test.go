@@ -15,7 +15,6 @@ import (
 )
 
 func TestStatsService_GetStats(t *testing.T) {
-
 	ctx := context.Background()
 
 	prStats := []rd.PRStatsOutput{
@@ -71,7 +70,6 @@ func TestStatsService_GetStats(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 

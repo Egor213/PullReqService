@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"app/internal/service"
 	"context"
 	"errors"
 	"testing"
@@ -8,7 +9,7 @@ import (
 	e "app/internal/entity"
 	repomocks "app/internal/mocks/repomock"
 	repoerrs "app/internal/repo/errors"
-	"app/internal/service"
+
 	sd "app/internal/service/dto"
 	serverrs "app/internal/service/errors"
 

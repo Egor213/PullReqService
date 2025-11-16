@@ -223,7 +223,6 @@ func (r *PullReqRepo) DeleteReviewer(ctx context.Context, uID string, prID strin
 
 	conn := r.CtxGetter.DefaultTrOrDB(ctx, r.Pool)
 	cmdTag, err := conn.Exec(ctx, sql, args...)
-
 	if err != nil {
 		return errutils.WrapPathErr(err)
 	}

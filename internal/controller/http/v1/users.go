@@ -50,7 +50,6 @@ func (r *UsersRoutes) setIsActive(c echo.Context) error {
 		UserID:   input.UserID,
 		IsActive: input.IsActive,
 	})
-
 	if err != nil {
 		if errors.Is(err, se.ErrNotFoundUser) {
 			return ut.NewErrReasonJSON(c, http.StatusNotFound, he.ErrCodeNotFound, he.ErrNotFound.Error())

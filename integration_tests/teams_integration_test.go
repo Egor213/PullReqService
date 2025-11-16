@@ -8,7 +8,10 @@ import (
 	. "github.com/Eun/go-hit"
 )
 
-var basePath = "http://localhost:8080/api/v1"
+const (
+	host     = "app:8080"
+	basePath = "http://" + host + "/api/v1"
+)
 
 func TestCreateTeam(t *testing.T) {
 	testCases := []struct {
@@ -84,7 +87,7 @@ func TestGetTeam(t *testing.T) {
 		},
 	}
 
-	testToken, _ := getAuthToken("u1", string(entity.RoleAdmin), "http://localhost:8080")
+	testToken, _ := getAuthToken("u1", string(entity.RoleAdmin), "http://"+host)
 
 	for _, tc := range testCases {
 		authToken := "none"
