@@ -67,8 +67,10 @@ func TestPullReqService_CreatePR(t *testing.T) {
 					AuthorID:  authorID,
 					Status:    e.StatusOpen,
 				}, nil)
-				u.EXPECT().GetActiveUsersTeam(ctx, authorTeam, gomock.AssignableToTypeOf([]string{})).Return([]string{"r1", "r2"}, nil)
-				p.EXPECT().AssignReviewers(ctx, prID, gomock.AssignableToTypeOf([]string{})).Return([]string{"r1", "r2"}, nil)
+				u.EXPECT().GetActiveUsersTeam(ctx, authorTeam, gomock.AssignableToTypeOf([]string{})).
+					Return([]string{"r1", "r2"}, nil)
+				p.EXPECT().AssignReviewers(ctx, prID, gomock.AssignableToTypeOf([]string{})).
+					Return([]string{"r1", "r2"}, nil)
 			},
 			want: e.PullRequest{
 				PullReqID: prID,

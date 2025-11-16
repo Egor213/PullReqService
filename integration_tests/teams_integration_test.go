@@ -9,7 +9,6 @@ import (
 )
 
 func TestCreateTeam_CreateUpdate(t *testing.T) {
-
 	baseTeam := map[string]any{
 		"team_name": "backend_test_case",
 		"members": []map[string]any{
@@ -59,7 +58,6 @@ func TestCreateTeam_CreateUpdate(t *testing.T) {
 }
 
 func TestCreateTeam_EmptyMembers(t *testing.T) {
-
 	baseTeam := map[string]any{
 		"team_name": "backend_test_case",
 		"members":   []map[string]any{},
@@ -81,7 +79,6 @@ func TestCreateTeam_EmptyMembers(t *testing.T) {
 }
 
 func TestGetTeam_BaseErrors(t *testing.T) {
-
 	testCases := []struct {
 		description      string
 		teamName         string

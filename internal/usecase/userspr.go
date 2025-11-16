@@ -13,10 +13,10 @@ type UsersPRUC struct {
 	PRService service.PullReq
 }
 
-func NewUsersPRUC(uService service.Users, PRService service.PullReq) *UsersPRUC {
+func NewUsersPRUC(uService service.Users, prService service.PullReq) *UsersPRUC {
 	return &UsersPRUC{
 		uService:  uService,
-		PRService: PRService,
+		PRService: prService,
 	}
 }
 

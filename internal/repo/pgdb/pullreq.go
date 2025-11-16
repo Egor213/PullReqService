@@ -65,7 +65,8 @@ func (r *PullReqRepo) CreatePR(ctx context.Context, in rd.CreatePRInput) (e.Pull
 func (r *PullReqRepo) GetPR(ctx context.Context, prID string) (e.PullRequest, error) {
 	sql, args, _ := r.Builder.
 		Select(
-			"prs.pr_id", "prs.title", "prs.author_id", "prs.status", "prs.need_more_reviewers", "prs.created_at", "prs.merged_at",
+			"prs.pr_id", "prs.title", "prs.author_id", "prs.status",
+			"prs.need_more_reviewers", "prs.created_at", "prs.merged_at",
 			"array_agg(pr_reviewers.user_id) AS assigned_reviewers",
 		).
 		From("prs").

@@ -30,7 +30,9 @@ func (r *UsersRepo) UpsetBulk(ctx context.Context, u []e.User) error {
 	builder := r.Builder.
 		Insert("users").
 		Columns("user_id", "username", "team_name", "is_active").
-		Suffix("ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username, team_name = EXCLUDED.team_name, is_active = EXCLUDED.is_active")
+		Suffix(
+			"ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username, team_name = EXCLUDED.team_name, is_active = EXCLUDED.is_active",
+		)
 
 	for _, user := range u {
 		builder = builder.Values(user.UserID, user.Username, user.TeamName, user.IsActive)

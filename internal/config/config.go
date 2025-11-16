@@ -62,7 +62,9 @@ func New() (*Config, error) {
 	}
 
 	if os.Getenv("TEST_RUN") == "true" {
-		cleanenv.ReadConfig(".testing.env", cfg)
+		if err := cleanenv.ReadConfig(".testing.env", cfg); err != nil {
+			return nil, errutils.WrapPathErr(err)
+		}
 	}
 
 	return cfg, nil

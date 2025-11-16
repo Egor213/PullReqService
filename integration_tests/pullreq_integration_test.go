@@ -254,5 +254,4 @@ func TestReassignUser_OKAndMerged(t *testing.T) {
 			tc.expectedResponse,
 		)
 	}
-
 }

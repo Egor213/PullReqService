@@ -12,10 +12,10 @@ type TeamsPRUC struct {
 	PRService service.PullReq
 }
 
-func NewTeamsPRUC(tService service.Teams, PRService service.PullReq) *TeamsPRUC {
+func NewTeamsPRUC(tService service.Teams, prService service.PullReq) *TeamsPRUC {
 	return &TeamsPRUC{
 		tService:  tService,
-		PRService: PRService,
+		PRService: prService,
 	}
 }
 
