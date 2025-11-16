@@ -45,7 +45,7 @@ golangci-lint run
 
 7. Для запуска интеграционных тестов воспользуйтесь коммандой:
 ```sh
-docker compose --profile tests up --build
+docker compose -f docker-compose.integration-tests.yaml up --build
 ```
 
 # Стек

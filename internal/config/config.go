@@ -8,8 +8,6 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/joho/godotenv"
 )
 
 type (
@@ -45,14 +43,6 @@ type (
 	}
 )
 
-const ENV_PATH = ".env"
-
-func init() {
-	if err := godotenv.Load(ENV_PATH); err != nil {
-		log.Warnf("Error loading .env file: %v", err)
-	}
-}
-
 func New() (*Config, error) {
 	cfg := &Config{}
 
@@ -69,6 +59,10 @@ func New() (*Config, error) {
 
 	if err := cleanenv.UpdateEnv(cfg); err != nil {
 		return nil, errutils.WrapPathErr(err)
+	}
+
+	if os.Getenv("TEST_RUN") == "true" {
+		cleanenv.ReadConfig(".testing.env", cfg)
 	}
 
 	return cfg, nil

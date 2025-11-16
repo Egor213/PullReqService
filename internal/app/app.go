@@ -2,6 +2,7 @@ package app
 
 import (
 	"app/internal/config"
+	"app/internal/fixtures"
 	"app/internal/repo"
 	"app/internal/service"
 	"app/internal/usecase"
@@ -11,6 +12,7 @@ import (
 	"app/pkg/validator"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 
 	httpapi "app/internal/controller/http/v1"
@@ -45,6 +47,11 @@ func Run() {
 	}
 	defer pg.Close()
 	log.Info("Connected to DB")
+
+	// Load test Fixtures
+	if os.Getenv("TEST_RUN") == "true" {
+		loadTestFixtures(pg)
+	}
 
 	// Repos
 	repositories := repo.NewRepositories(pg)
@@ -97,4 +104,17 @@ func Run() {
 	if err != nil {
 		log.Error(errutils.WrapPathErr(err))
 	}
+}
+
+func loadTestFixtures(pg *postgres.Postgres) {
+	log.Info("Load testing fixtures to DB")
+	pathToFixtures := path.Join("./fixtures", "tests")
+	fx, err := fixtures.NewFixturesFromPool(pg.Pool, pathToFixtures, "postgres")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := fx.Load(); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Fixtures successfully loaded")
 }

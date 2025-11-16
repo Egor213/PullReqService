@@ -14,4 +14,7 @@ FROM scratch
 COPY --from=builder /app/config /config
 COPY --from=builder /app/migrations /migrations
 COPY --from=builder /bin/app /app
+COPY --from=builder /app/.env.testing .testing.env
+COPY --from=builder /app/fixtures /fixtures
+
 CMD ["/app"]
