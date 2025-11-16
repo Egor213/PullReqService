@@ -118,3 +118,26 @@ go run cmd/loadfixtures/main.go
 + В целом задание оказалось очень интересным и довольно объёмным для столь малого времени. Некоторые моменты хотелось бы увидеть в более подробном описании, поэтому в некоторых случаях пришлось додумывать детали самостоятельно.
 
 # Примеры работы
+
+![](images/add_ok.jpg)
+
+
+![](images/create_pr_ok.jpg)
+
+
+![](images/get_team.jpg)
+
+
+![](images/login.jpg)
+
+
+![](images/not_found.jpg)
+
+
+![](images/set_is_active.jpg)
+
+
+![](images/unauthorized.jpg)
+
+
+![](images/reassign.jpg)
